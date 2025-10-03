@@ -223,12 +223,12 @@ defmodule Combo.Tracker.ShardReplicationTest do
     assert list(shard, topic) == []
     {:ok, _ref} = Shard.track(shard, self(), topic, "me", %{name: "me"})
     assert_join(^topic, "me", %{name: "me"})
-    assert [{"me", %{name: "me", phx_ref: _}}] = list(shard, topic)
+    assert [{"me", %{name: "me", combo_ref: _}}] = list(shard, topic)
 
     {:ok, _ref} = Shard.track(shard, local_presence, topic, "me2", %{name: "me2"})
     assert_join(^topic, "me2", %{name: "me2"})
 
-    assert [{"me", %{name: "me", phx_ref: _}}, {"me2", %{name: "me2", phx_ref: _}}] =
+    assert [{"me", %{name: "me", combo_ref: _}}, {"me2", %{name: "me2", combo_ref: _}}] =
              list(shard, topic)
 
     # remote joins
@@ -239,9 +239,9 @@ defmodule Combo.Tracker.ShardReplicationTest do
     assert_map(%{@node1 => %Replica{status: :up}}, replicas(shard), 1)
 
     assert [
-             {"me", %{name: "me", phx_ref: _}},
-             {"me2", %{name: "me2", phx_ref: _}},
-             {"node1", %{name: "s1", phx_ref: _}}
+             {"me", %{name: "me", combo_ref: _}},
+             {"me2", %{name: "me2", combo_ref: _}},
+             {"node1", %{name: "s1", combo_ref: _}}
            ] =
              list(shard, topic)
 
@@ -249,13 +249,13 @@ defmodule Combo.Tracker.ShardReplicationTest do
     Process.exit(local_presence, :kill)
     assert_leave(^topic, "me2", %{name: "me2"})
 
-    assert [{"me", %{name: "me", phx_ref: _}}, {"node1", %{name: "s1", phx_ref: _}}] =
+    assert [{"me", %{name: "me", combo_ref: _}}, {"node1", %{name: "s1", combo_ref: _}}] =
              list(shard, topic)
 
     # remote leaves
     Process.exit(remote_pres, :kill)
     assert_leave(^topic, "node1", %{name: "s1"})
-    assert [{"me", %{name: "me", phx_ref: _}}] = list(shard, topic)
+    assert [{"me", %{name: "me", combo_ref: _}}] = list(shard, topic)
   end
 
   test "detects nodedown and locally broadcasts leaves",
@@ -319,27 +319,27 @@ defmodule Combo.Tracker.ShardReplicationTest do
     refute Process.whereis(shard) in Process.info(self())[:links]
   end
 
-  test "updating presence sends join/leave and phx_ref_prev",
+  test "updating presence sends join/leave and combo_ref_prev",
        %{shard: shard, topic: topic} do
     subscribe(topic)
     {:ok, _ref} = Shard.track(shard, self(), topic, "u1", %{name: "u1"})
-    assert [{"u1", %{name: "u1", phx_ref: ref}}] = list(shard, topic)
+    assert [{"u1", %{name: "u1", combo_ref: ref}}] = list(shard, topic)
     {:ok, _ref} = Shard.update(shard, self(), topic, "u1", %{name: "u1-updated"})
-    assert_leave(^topic, "u1", %{name: "u1", phx_ref: ^ref})
-    assert_join(^topic, "u1", %{name: "u1-updated", phx_ref_prev: ^ref})
+    assert_leave(^topic, "u1", %{name: "u1", combo_ref: ^ref})
+    assert_join(^topic, "u1", %{name: "u1-updated", combo_ref_prev: ^ref})
   end
 
-  test "updating presence sends join/leave and phx_ref_prev with profer diffs if function for update used",
+  test "updating presence sends join/leave and combo_ref_prev with profer diffs if function for update used",
        %{shard: shard, topic: topic} do
     subscribe(topic)
     {:ok, _ref} = Shard.track(shard, self(), topic, "u1", %{browser: "Chrome", status: "online"})
-    assert [{"u1", %{browser: "Chrome", status: "online", phx_ref: ref}}] = list(shard, topic)
+    assert [{"u1", %{browser: "Chrome", status: "online", combo_ref: ref}}] = list(shard, topic)
 
     {:ok, _ref} =
       Shard.update(shard, self(), topic, "u1", fn meta -> Map.put(meta, :status, "away") end)
 
-    assert_leave(^topic, "u1", %{browser: "Chrome", status: "online", phx_ref: ^ref})
-    assert_join(^topic, "u1", %{browser: "Chrome", status: "away", phx_ref_prev: ^ref})
+    assert_leave(^topic, "u1", %{browser: "Chrome", status: "online", combo_ref: ^ref})
+    assert_join(^topic, "u1", %{browser: "Chrome", status: "away", combo_ref_prev: ^ref})
   end
 
   test "updating with no prior presence", %{shard: shard, topic: topic} do

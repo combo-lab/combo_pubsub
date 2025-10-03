@@ -321,13 +321,13 @@ defmodule Combo.Tracker.Shard do
     Combo.PubSub.subscribe(pubsub_server, namespaced_topic, link: true)
   end
 
-  defp put_update(state, pid, topic, key, meta, %{phx_ref: prev_ref} = prev_meta) do
+  defp put_update(state, pid, topic, key, meta, %{combo_ref: prev_ref} = prev_meta) do
     ref = random_ref()
 
     meta =
       meta
-      |> Map.put(:phx_ref, ref)
-      |> Map.put(:phx_ref_prev, prev_ref)
+      |> Map.put(:combo_ref, ref)
+      |> Map.put(:combo_ref_prev, prev_ref)
 
     new_state =
       state
@@ -340,7 +340,7 @@ defmodule Combo.Tracker.Shard do
   defp put_presence(state, pid, topic, key, meta, prev_meta \\ nil) do
     Process.link(pid)
     ref = random_ref()
-    meta = Map.put(meta, :phx_ref, ref)
+    meta = Map.put(meta, :combo_ref, ref)
 
     new_state =
       state
@@ -498,7 +498,7 @@ defmodule Combo.Tracker.Shard do
   end
 
   defp namespaced_topic(shard_name) do
-    "phx_tracker:#{shard_name}"
+    "combo_tracker:#{shard_name}"
   end
 
   defp broadcast_from(state, from, msg) do

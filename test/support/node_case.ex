@@ -60,7 +60,7 @@ defmodule Combo.PubSub.NodeCase do
     :ok = Combo.PubSub.subscribe(@pubsub, namespaced_topic(server))
   end
 
-  defp namespaced_topic(server), do: "phx_tracker:#{server}"
+  defp namespaced_topic(server), do: "combo_tracker:#{server}"
 
   def shard_name(server), do: :"#{server}_shard0"
 
@@ -112,7 +112,7 @@ defmodule Combo.PubSub.NodeCase do
   end
 
   def spy_on_server(node_name, pubsub_server \\ @pubsub, target_pid, tracker_server) do
-    spy_on_pubsub(node_name, pubsub_server, target_pid, "phx_tracker:#{tracker_server}")
+    spy_on_pubsub(node_name, pubsub_server, target_pid, "combo_tracker:#{tracker_server}")
   end
 
   def spy_on_pubsub(node_name, server \\ @pubsub, target_pid, topic) do

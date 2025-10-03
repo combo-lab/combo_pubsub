@@ -15,7 +15,7 @@ defmodule Combo.Tracker.PoolTest do
          %{server: server} do
       {:ok, ref} = Tracker.track(server, self(), "topic", "me", %{name: "me"})
 
-      assert [{"me", %{name: "me", phx_ref: ^ref}}] =
+      assert [{"me", %{name: "me", combo_ref: ^ref}}] =
                Tracker.list(server, "topic")
     end
 
@@ -30,7 +30,7 @@ defmodule Combo.Tracker.PoolTest do
         end
 
       for {t, ref} <- Enum.zip([topics, refs]) do
-        assert Tracker.list(server, t) == [{"me", %{name: "me", phx_ref: ref}}]
+        assert Tracker.list(server, t) == [{"me", %{name: "me", combo_ref: ref}}]
       end
     end
 
@@ -82,7 +82,7 @@ defmodule Combo.Tracker.PoolTest do
       expected_changes = Enum.zip([topics, old_refs, new_refs])
 
       for {t, old_ref, new_ref} <- expected_changes do
-        assert [{"me", %{new: "thing", phx_ref: ^new_ref, phx_ref_prev: ^old_ref}}] =
+        assert [{"me", %{new: "thing", combo_ref: ^new_ref, combo_ref_prev: ^old_ref}}] =
                  Tracker.list(server, t)
       end
     end
@@ -109,7 +109,7 @@ defmodule Combo.Tracker.PoolTest do
       expected_changes = Enum.zip([topics, old_refs, new_refs])
 
       for {t, old_ref, new_ref} <- expected_changes do
-        assert [{"me", %{a: "newval", phx_ref: ^new_ref, phx_ref_prev: ^old_ref}}] =
+        assert [{"me", %{a: "newval", combo_ref: ^new_ref, combo_ref_prev: ^old_ref}}] =
                  Tracker.list(server, t)
       end
     end
