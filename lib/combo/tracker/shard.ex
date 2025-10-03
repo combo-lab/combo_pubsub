@@ -498,7 +498,7 @@ defmodule Combo.Tracker.Shard do
   end
 
   defp namespaced_topic(shard_name) do
-    "phx_presence:#{shard_name}"
+    "phx_tracker:#{shard_name}"
   end
 
   defp broadcast_from(state, from, msg) do
