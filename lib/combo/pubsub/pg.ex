@@ -15,19 +15,14 @@ defmodule Combo.PubSub.PG do
 
   @impl true
   def broadcast(adapter_name, topic, message, dispatcher) do
-    case pg_members(group(adapter_name)) do
-      {:error, {:no_such_group, _}} ->
-        {:error, :no_such_group}
+    pids = pg_members(group(adapter_name))
+    message = forward_to_local(topic, message, dispatcher)
 
-      pids ->
-        message = forward_to_local(topic, message, dispatcher)
-
-        for pid <- pids, node(pid) != node() do
-          send(pid, message)
-        end
-
-        :ok
+    for pid <- pids, node(pid) != node() do
+      send(pid, message)
     end
+
+    :ok
   end
 
   @impl true
