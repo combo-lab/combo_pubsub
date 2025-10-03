@@ -6,7 +6,10 @@ defmodule Combo.PubSub do
 
   To start a pubsub server, add `Combo.PubSub` to your supervision tree:
 
-      {Combo.PubSub, name: :my_pubsub}
+      children = [
+        # ...
+        {Combo.PubSub, name: :my_pubsub}
+      ]
 
   You can now use the functions in this module to subscribe and broadcast
   messages:
