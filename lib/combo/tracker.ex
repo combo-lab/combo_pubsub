@@ -1,6 +1,6 @@
 defmodule Combo.Tracker do
   @moduledoc ~S"""
-  Distributed presence tracking to processes.
+  Distributed presence tracking system.
 
   Tracker shards use a heartbeat protocol and CRDT to replicate presence
   information across a cluster in an eventually consistent, conflict-free

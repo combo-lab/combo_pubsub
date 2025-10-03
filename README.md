@@ -1,56 +1,43 @@
 # Combo.PubSub
 
-> Distributed PubSub and Presence.
+[![CI](https://github.com/combo-lab/combo_pubsub/actions/workflows/ci.yml/badge.svg)](https://github.com/combo-lab/combo_pubsub/actions/workflows/ci.yml)
+[![Hex.pm](https://img.shields.io/hexpm/v/combo_pubsub.svg)](https://hex.pm/packages/combo_pubsub)
 
-[![Build Status](https://github.com/combo-lab/combo_pubsub/actions/workflows/ci.yml/badge.svg)](https://github.com/combo-lab/combo_pubsub/actions/workflows/ci.yml)
+Distributed Pub/Sub system and presence tracking system.
 
-## Usage
+## Installation
 
-Add `:combo_pubsub` to your list of dependencies in `mix.exs`:
+Add `:combo_pubsub` to the list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:combo_pubsub, "~> 2.0"}]
+  [
+    {:combo_pubsub, "<requirement>"}
+  ]
 end
 ```
 
-Then start your PubSub instance:
+## Usage
 
-```elixir
-defmodule MyApp do
-  use Application
-
-  def start(_type, _args) do
-    children = [
-      {Combo.PubSub, name: MyApp.PubSub}
-    ]
-
-    opts = [strategy: :one_for_one, name: MyApp.Supervisor]
-    Supervisor.start_link(children, opts)
-  end
-end
-```
-
-Now broadcast and subscribe:
-
-```elixir
-Combo.PubSub.subscribe(MyApp.PubSub, "user:123")
-Combo.PubSub.broadcast(MyApp.PubSub, "user:123", :hello_world)
-```
+For more information, see the [documentation](https://hexdocs.pm/combo_pubsub).
 
 ## Testing
 
 Testing by default spawns nodes internally for distributed tests.
 To run tests that do not require clustering, exclude the `clustered` tag:
 
-```shell
+```console
 $ mix test --exclude clustered
 ```
 
 If you have issues running the clustered tests try running:
 
-```shell
+```console
 $ epmd -daemon
 ```
 
 before running the tests.
+
+## License
+
+[MIT](./LICENSE)
