@@ -1,5 +1,5 @@
 Logger.configure(level: :info)
-Application.put_env(:combo_pubsub, :test_adapter, {Combo.PubSub.PG2, []})
+Application.put_env(:combo_pubsub, :test_adapter, {Combo.PubSub.PG, []})
 exclude = Keyword.get(ExUnit.configuration(), :exclude, [])
 
 Supervisor.start_link(

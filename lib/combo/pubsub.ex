@@ -28,7 +28,7 @@ defmodule Combo.PubSub do
   Combo PubSub was designed to be flexible and support multiple backends. There
   is one built-in backend:
 
-    * `Combo.PubSub.PG2` - the default adapter that ships as part of
+    * `Combo.PubSub.PG` - the default adapter that ships as part of
       `Combo.PubSub`. It runs on Distributed Erlang, directly exchanging
       notifications between servers. It supports a `:pool_size` option to be
       given alongside the name, defaults to `1`. Note the `:pool_size` must
@@ -55,7 +55,7 @@ defmodule Combo.PubSub do
   users to be encoded once and written directly to sockets instead of being
   encoded per channel.
 
-  ## Safe pool size migration (when using `Combo.PubSub.PG2` adapter)
+  ## Safe pool size migration (when using `Combo.PubSub.PG` adapter)
 
   When you need to change the pool size in a running cluster, you can use the
   `broadcast_pool_size` option to ensure no messages are lost during deployment.
@@ -156,7 +156,7 @@ defmodule Combo.PubSub do
 
     * `:name` - the name of the pubsub server to be started.
     * `:adapter` - the adapter to use.
-      Defaults to `Combo.PubSub.PG2`.
+      Defaults to `Combo.PubSub.PG`.
     * `:pool_size` - the number of pubsub partitions to launch.
       Defaults to one partition for every 4 cores.
     * `:registry_size` - the number of `Registry` partitions to launch. This

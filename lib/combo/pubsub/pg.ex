@@ -1,4 +1,4 @@
-defmodule Combo.PubSub.PG2 do
+defmodule Combo.PubSub.PG do
   @moduledoc """
   `Combo.PubSub` adapter based on `:pg`/`:pg2`.
 
@@ -84,7 +84,7 @@ defmodule Combo.PubSub.PG2 do
 
     children =
       for group <- listener_groups do
-        Supervisor.child_spec({Combo.PubSub.PG2Worker, {name, group}}, id: group)
+        Supervisor.child_spec({Combo.PubSub.PGWorker, {name, group}}, id: group)
       end
 
     Supervisor.init(children, strategy: :one_for_one)
@@ -102,7 +102,7 @@ defmodule Combo.PubSub.PG2 do
   end
 end
 
-defmodule Combo.PubSub.PG2Worker do
+defmodule Combo.PubSub.PGWorker do
   @moduledoc false
   use GenServer
 

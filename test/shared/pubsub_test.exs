@@ -8,7 +8,7 @@ defmodule Combo.PubSubTest do
   configuration and require this file, ie:
 
       # your_pubsub_adapter_test.exs
-      Application.put_env(:combo_pubsub, :test_adapter, {Combo.PubSub.PG2, []})
+      Application.put_env(:combo_pubsub, :test_adapter, {Combo.PubSub.PG, []})
       Code.require_file "../deps/combo_pubsub/test/shared/pubsub_test.exs", __DIR__
 
   """

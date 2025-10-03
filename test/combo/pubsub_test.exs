@@ -12,7 +12,7 @@ defmodule Combo.PubSub.UnitTest do
     test "pool_size can't be smaller than broadcast_pool_size" do
       opts = [name: name(), pool_size: 1, broadcast_pool_size: 2]
 
-      {:error, {{:shutdown, {:failed_to_start_child, Combo.PubSub.PG2, message}}, _}} =
+      {:error, {{:shutdown, {:failed_to_start_child, Combo.PubSub.PG, message}}, _}} =
         start_supervised({Combo.PubSub, opts})
 
       assert ^message =

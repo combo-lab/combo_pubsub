@@ -18,7 +18,7 @@ defmodule Combo.PubSub.Supervisor do
   @impl true
   def init(opts) do
     name = opts[:name]
-    adapter = opts[:adapter] || Combo.PubSub.PG2
+    adapter = opts[:adapter] || Combo.PubSub.PG
     adapter_name = Module.concat(name, "Adapter")
 
     partitions =
