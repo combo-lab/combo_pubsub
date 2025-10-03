@@ -1,4 +1,6 @@
 defmodule Combo.PubSub.NodeCase do
+  @moduledoc false
+
   @timeout 1000
   @heartbeat 100
   @permdown 1500
@@ -17,6 +19,8 @@ defmodule Combo.PubSub.NodeCase do
   end
 
   defmodule TestTracker do
+    @moduledoc false
+
     @behaviour Combo.Tracker
 
     def start_link(_opts), do: {:error, :not_implemented}

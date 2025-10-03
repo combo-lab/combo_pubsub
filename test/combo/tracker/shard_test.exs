@@ -10,7 +10,7 @@ defmodule Combo.Tracker.ShardTest do
   end
 
   test "validates permdown_period" do
-    opts = Keyword.merge(@opts, permdown_period: 1_200_00, down_period: 1_200_000)
+    opts = Keyword.merge(@opts, permdown_period: 120_000, down_period: 1_200_000)
 
     assert Combo.Tracker.Shard.init([nil, nil, opts]) ==
              {:error, "permdown_period must be at least larger than the down_period"}
