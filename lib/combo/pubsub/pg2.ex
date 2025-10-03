@@ -1,6 +1,6 @@
 defmodule Combo.PubSub.PG2 do
   @moduledoc """
-  Combo PubSub adapter based on `:pg`/`:pg2`.
+  `Combo.PubSub` adapter based on `:pg`/`:pg2`.
 
   It runs on Distributed Erlang and is the default adapter.
   """
