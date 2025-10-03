@@ -23,13 +23,16 @@ defmodule Combo.PubSub.Mixfile do
   def application do
     [
       mod: {Combo.PubSub.Application, []},
-      extra_applications: [:logger, :crypto],
+      extra_applications: [:logger, :crypto]
     ]
   end
 
   defp deps do
     [
-      {:ex_doc, ">= 0.0.0", only: :docs}
+      {:ex_check, ">= 0.0.0", only: [:dev], runtime: false},
+      {:dialyxir, ">= 0.0.0", only: [:dev], runtime: false},
+      {:credo, ">= 0.0.0", only: [:dev], runtime: false},
+      {:ex_doc, ">= 0.0.0", only: [:dev], runtime: false}
     ]
   end
 
@@ -47,7 +50,6 @@ defmodule Combo.PubSub.Mixfile do
       main: "Combo.PubSub",
       source_ref: "v#{@version}",
       source_url: "https://github.com/combo-lab/combo_pubsub",
-
       before_closing_body_tag: %{
         html: """
         <script defer src="https://cdn.jsdelivr.net/npm/mermaid@11.6.0/dist/mermaid.min.js"></script>
