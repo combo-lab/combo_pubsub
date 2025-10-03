@@ -1,53 +1,49 @@
-name: Tests
+name: CI
 
 on:
   push:
+    branches: [ "main" ]
   pull_request:
-    branches:
-      - main
+    branches: [ "main" ]
 
-env:
-  ACTIONS_RUNNER_FORCED_INTERNAL_NODE_VERSION: node16
-  ACTIONS_RUNNER_FORCE_ACTIONS_NODE_VERSION: node16
-  ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+permissions:
+  contents: read
 
 jobs:
-  tests:
-    name: Run tests (${{ matrix.image }})
-
+  mix_check:
+    name: Elixir ${{ matrix.elixir }} / OTP ${{ matrix.otp }}
+    runs-on: ubuntu-24.04
     strategy:
-      fail-fast: false
+      # Following matrix is maintained by following https://hexdocs.pm/elixir/compatibility-and-deprecations.html
+      # And, only the most recent 3 versions of Elixir are involved.
       matrix:
         include:
-          - image: 1.6.6-erlang-21.3.8.24-debian-buster-20210902-slim
-          - image: 1.17.2-erlang-27.0.1-debian-bookworm-20240701-slim
-
-    runs-on: ubuntu-latest
-    container:
-      image: hexpm/elixir:${{ matrix.image }}
-
+          # Elixir v1.18
+          - { elixir: '1.18.x', otp: '27.x' }
+          - { elixir: '1.18.x', otp: '26.x' }
+          - { elixir: '1.18.x', otp: '25.x' }
+          # # Elixir v1.17
+          # - { elixir: '1.17.x', otp: '27.x' }
+          # - { elixir: '1.17.x', otp: '26.x' }
+          # - { elixir: '1.17.x', otp: '25.x' }
+          # # Elixir v1.16
+          # - { elixir: '1.16.x', otp: '26.x' }
+          # - { elixir: '1.16.x', otp: '25.x' }
+          # - { elixir: '1.16.x', otp: '24.x' }
     steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-
-    - name: Hex and Rebar setup
-      run: |
-        mix local.hex --force
-        mix local.rebar --force
-
-    - name: Restore deps and _build cache
+    - uses: actions/checkout@v4
+    - name: Setup Elixir
+      uses: erlef/setup-beam@v1
+      with:
+        elixir-version: ${{ matrix.elixir }}
+        otp-version: ${{ matrix.otp }}
+    - name: Restore dependencies cache
       uses: actions/cache@v4
       with:
-        path: |
-          deps
-          _build
-        key: deps-${{ runner.os }}-${{ matrix.image }}-${{ hashFiles('**/mix.lock') }}
-        restore-keys: |
-          deps-${{ runner.os }}-${{ matrix.image }}
+        path: deps
+        key: ${{ runner.os }}-elixir_${{ matrix.elixir }}-otp_${{ matrix.otp }}-mix_${{ hashFiles('**/mix.lock') }}
+        restore-keys: ${{ runner.os }}-elixir_${{ matrix.elixir }}-otp_${{ matrix.otp }}-mix
     - name: Install dependencies
-      run: mix deps.get --only test
-
-    - name: Run tests
-      run: |
-        epmd -daemon
-        mix test
+      run: mix deps.get
+    - name: Run mix check
+      run: mix check
