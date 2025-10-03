@@ -1,10 +1,10 @@
 defmodule Combo.PubSub do
   @moduledoc """
-  Distributed real-time Pub/Sub system.
+  Distributed Pub/Sub system.
 
   ## Getting started
 
-  You start `Combo.PubSub` directly in your supervision tree:
+  To start a pubsub server, add `Combo.PubSub` to your supervision tree:
 
       {Combo.PubSub, name: :my_pubsub}
 

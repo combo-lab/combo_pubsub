@@ -1,6 +1,6 @@
 defmodule Combo.Tracker do
   @moduledoc ~S"""
-  Provides distributed presence tracking to processes.
+  Distributed presence tracking to processes.
 
   Tracker shards use a heartbeat protocol and CRDT to replicate presence
   information across a cluster in an eventually consistent, conflict-free
@@ -10,15 +10,15 @@ defmodule Combo.Tracker do
 
   ## Implementing a Tracker
 
-  To start a tracker, first add the tracker to your supervision tree:
+  To start a tracker, first add a tracker to your supervision tree:
 
       children = [
         # ...
         {MyTracker, [name: MyTracker, pubsub_server: MyApp.PubSub]}
       ]
 
-  Next, implement `MyTracker` with support for the `Combo.Tracker`
-  behaviour callbacks. An example of a minimal tracker could include:
+  Then, implement `MyTracker` with support for the `Combo.Tracker` behaviour
+  callbacks. An example of a minimal tracker could include:
 
       defmodule MyTracker do
         use Combo.Tracker
@@ -28,11 +28,13 @@ defmodule Combo.Tracker do
           Combo.Tracker.start_link(__MODULE__, opts, opts)
         end
 
+        @impl true
         def init(opts) do
           server = Keyword.fetch!(opts, :pubsub_server)
           {:ok, %{pubsub_server: server, node_name: Combo.PubSub.node_name(server)}}
         end
 
+        @impl true
         def handle_diff(diff, state) do
           for {topic, {joins, leaves}} <- diff do
             for {key, meta} <- joins do
@@ -52,15 +54,14 @@ defmodule Combo.Tracker do
 
   Trackers must implement `start_link/1`, `c:init/1`, and `c:handle_diff/2`.
   The `c:init/1` callback allows the tracker to manage its own state when
-  running within the `Combo.Tracker` server. The `handle_diff` callback
-  is invoked with a diff of presence join and leave events, grouped by
-  topic. As replicas heartbeat and replicate data, the local tracker state is
-  merged with the remote data, and the diff is sent to the callback. The
-  handler can use this information to notify subscribers of events, as
-  done above.
+  running within the `Combo.Tracker` server. The `handle_diff` callback is
+  invoked with a diff of presence join and leave events, grouped by topic.
+  As replicas heartbeat and replicate data, the local tracker state is merged
+  with the remote data, and the diff is sent to the callback. The handler can
+  use this information to notify subscribers of events, as done above.
 
-  An optional `handle_info/2` callback may also be invoked to handle
-  application specific messages within your tracker.
+  An optional `handle_info/2` callback may also be invoked to handle application
+  specific messages within your tracker.
 
   ## Stability and Performance Considerations
 
@@ -73,8 +74,8 @@ defmodule Combo.Tracker do
   ## Application Shutdown
 
   When a tracker shuts down, the other nodes do not assume it is gone
-  for good. After all, in a distributed system, it is impossible to know if something
-  is just temporarily unavailable or if it has crashed.
+  for good. After all, in a distributed system, it is impossible to know if
+  something is just temporarily unavailable or if it has crashed.
 
   For this reason, when you call `System.stop()` or the Erlang VM receives a
   `SIGTERM`, any presences that the local tracker instance has will continue to
@@ -93,6 +94,7 @@ defmodule Combo.Tracker do
   `SIGKILL` or a `Ctrl+C` in `iex`), other nodes will still have to wait the
   `:down_period` to notice that the tracker's presences are gone.
   """
+
   use Supervisor
   require Logger
   alias Combo.Tracker.Shard
@@ -100,10 +102,13 @@ defmodule Combo.Tracker do
   @type presence :: {key :: String.t(), meta :: map}
   @type topic :: String.t()
 
-  @callback init(Keyword.t()) :: {:ok, state :: term} | {:error, reason :: term}
-  @callback handle_diff(%{topic => {joins :: [presence], leaves :: [presence]}}, state :: term) ::
-              {:ok, state :: term}
-  @callback handle_info(message :: term, state :: term) :: {:noreply, state :: term}
+  @callback init(Keyword.t()) :: {:ok, state :: term()} | {:error, reason :: term()}
+  @callback handle_diff(
+              %{topic() => {joins :: [presence()], leaves :: [presence()]}},
+              state :: term()
+            ) ::
+              {:ok, state :: term()}
+  @callback handle_info(message :: term(), state :: term()) :: {:noreply, state :: term()}
   @optional_callbacks handle_info: 2
 
   defmacro __using__(_opts) do
@@ -135,11 +140,13 @@ defmodule Combo.Tracker do
   @doc """
   Tracks a presence.
 
-    * `tracker_name` - The registered name of the tracker server
-    * `pid` - The Pid to track
-    * `topic` - The `Combo.PubSub` topic for this presence
-    * `key` - The key identifying this presence
-    * `meta` - The map of metadata to attach to this presence
+  ## Arguments
+
+    * `tracker_name` - the registered name of the tracker server.
+    * `pid` - the pid to track.
+    * `topic` - the `Combo.PubSub` topic for this presence.
+    * `key` - the key identifying this presence.
+    * `meta` - the map of metadata to attach to this presence.
 
   A process may be tracked multiple times, provided the topic and key pair
   are unique for any prior calls for the given process.
@@ -151,6 +158,7 @@ defmodule Combo.Tracker do
 
       iex> Combo.Tracker.track(MyTracker, self(), "lobby", u.id, %{stat: "away"})
       {:error, {:already_tracked, #PID<0.56.0>, "lobby", "123"}}
+
   """
   @spec track(atom, pid, topic, term, map) :: {:ok, ref :: binary} | {:error, reason :: term}
   def track(tracker_name, pid, topic, key, meta) when is_pid(pid) and is_map(meta) do
@@ -162,10 +170,12 @@ defmodule Combo.Tracker do
   @doc """
   Untracks a presence.
 
-    * `tracker_name` - The registered name of the tracker server
-    * `pid` - The Pid to untrack
-    * `topic` - The `Combo.PubSub` topic to untrack for this presence
-    * `key` - The key identifying this presence
+  ## Arguments
+
+    * `tracker_name` - the registered name of the tracker server.
+    * `pid` - the pid to untrack.
+    * `topic` - the `Combo.PubSub` topic to untrack for this presence.
+    * `key` - the key identifying this presence.
 
   All presences for a given Pid can be untracked by calling the
   `Combo.Tracker.untrack/2` signature of this function.
@@ -176,6 +186,7 @@ defmodule Combo.Tracker do
       :ok
       iex> Combo.Tracker.untrack(MyTracker, self())
       :ok
+
   """
   @spec untrack(atom, pid, topic, term) :: :ok
   def untrack(tracker_name, pid, topic, key) when is_pid(pid) do
@@ -192,11 +203,13 @@ defmodule Combo.Tracker do
   @doc """
   Updates a presence's metadata.
 
-    * `tracker_name` - The registered name of the tracker server
-    * `pid` - The Pid being tracked
-    * `topic` - The `Combo.PubSub` topic to update for this presence
-    * `key` - The key identifying this presence
-    * `meta` - Either a new map of metadata to attach to this presence,
+  ## Arguments
+
+    * `tracker_name` - the registered name of the tracker server.
+    * `pid` - the pid being tracked.
+    * `topic` - the `Combo.PubSub` topic to update for this presence.
+    * `key` - the key identifying this presence.
+    * `meta` - either a new map of metadata to attach to this presence,
       or a function. The function will receive the current metadata as
       input and the return value will be used as the new metadata
 
@@ -207,6 +220,7 @@ defmodule Combo.Tracker do
 
       iex> Combo.Tracker.update(MyTracker, self(), "lobby", u.id, fn meta -> Map.put(meta, :away, true) end)
       {:ok, "1WpAofWYIAA="}
+
   """
   @spec update(atom, pid, topic, term, map | (map -> map)) ::
           {:ok, ref :: binary} | {:error, reason :: term}
@@ -220,8 +234,10 @@ defmodule Combo.Tracker do
   @doc """
   Lists all presences tracked under a given topic.
 
-    * `tracker_name` - The registered name of the tracker server
-    * `topic` - The `Combo.PubSub` topic
+  ## Arguments
+
+    * `tracker_name` - the registered name of the tracker server.
+    * `topic` - the `Combo.PubSub` topic.
 
   Returns a list of presences in key/metadata tuple pairs.
 
@@ -229,6 +245,7 @@ defmodule Combo.Tracker do
 
       iex> Combo.Tracker.list(MyTracker, "lobby")
       [{123, %{name: "user 123"}}, {456, %{name: "user 456"}}]
+
   """
   @spec list(atom, topic) :: [presence]
   def list(tracker_name, topic) do
@@ -240,9 +257,11 @@ defmodule Combo.Tracker do
   @doc """
   Gets presences tracked under a given topic and key pair.
 
-    * `tracker_name` - The registered name of the tracker server
-    * `topic` - The `Combo.PubSub` topic
-    * `key` - The key of the presence
+  ## Arguments
+
+    * `tracker_name` - the registered name of the tracker server.
+    * `topic` - the `Combo.PubSub` topic.
+    * `key` - the key of the presence.
 
   Returns a list of presence metadata.
 
@@ -265,6 +284,7 @@ defmodule Combo.Tracker do
 
       iex> Combo.Tracker.graceful_permdown(MyTracker)
       :ok
+
   """
   @spec graceful_permdown(atom) :: :ok
   def graceful_permdown(tracker_name) do
@@ -275,9 +295,11 @@ defmodule Combo.Tracker do
   @doc """
   Starts a tracker pool.
 
-    * `tracker` - The tracker module implementing the `Combo.Tracker` behaviour
-    * `tracker_arg` - The argument to pass to the tracker handler `c:init/1`
-    * `pool_opts` - The list of options used to construct the shard pool
+  ## Arguments
+
+    * `tracker` - the tracker module implementing the `Combo.Tracker` behaviour.
+    * `tracker_arg` - the argument to pass to the tracker handler `c:init/1`.
+    * `pool_opts` - the list of options used to construct the shard pool.
 
   ## Required `pool_opts`:
 
