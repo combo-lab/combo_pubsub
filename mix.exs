@@ -7,7 +7,7 @@ defmodule Combo.PubSub.Mixfile do
     [
       app: :combo_pubsub,
       version: @version,
-      elixir: "~> 1.6",
+      elixir: "~> 1.18",
       name: "Combo.PubSub",
       description: "Distributed PubSub and Presence platform",
       elixirc_paths: elixirc_paths(Mix.env()),
