@@ -1,19 +1,24 @@
 defmodule Combo.PubSub.Mixfile do
   use Mix.Project
 
-  @version "2.1.3"
+  @version "0.1.0"
+  @description "Distributed Pub/Sub system and presence tracking system."
+  @source_url "https://github.com/combo-lab/combo_pubsub"
+  @changelog_url "https://github.com/combo-lab/combo_pubsub/blob/v#{@version}/CHANGELOG.md"
 
   def project do
     [
       app: :combo_pubsub,
       version: @version,
       elixir: "~> 1.18",
-      name: "Combo.PubSub",
-      description: "Distributed PubSub and Presence platform",
       elixirc_paths: elixirc_paths(Mix.env()),
-      package: package(),
+      deps: deps(),
+      description: @description,
+      source_url: @source_url,
+      homepage_url: @source_url,
       docs: docs(),
-      deps: deps()
+      package: package(),
+      aliases: aliases()
     ]
   end
 
@@ -38,18 +43,33 @@ defmodule Combo.PubSub.Mixfile do
 
   defp package do
     [
-      maintainers: ["Chris McCord", "José Valim", "Alexander Songe", "Gary Rennie"],
       licenses: ["MIT"],
-      links: %{github: "https://github.com/combo-lab/combo_pubsub"},
-      files: ~w(lib test/shared CHANGELOG.md LICENSE.md mix.exs README.md)
+      links: %{
+        Source: @source_url,
+        Changelog: @changelog_url
+      },
+      files: ~w(lib mix.exs README.md CHANGELOG.md LICENSE)
     ]
+  end
+
+  defp aliases do
+    [
+      publish: ["hex.publish", "tag"],
+      tag: &tag_release/1
+    ]
+  end
+
+  defp tag_release(_) do
+    Mix.shell().info("Tagging release as v#{@version}")
+    System.cmd("git", ["tag", "v#{@version}"])
+    System.cmd("git", ["push", "--tags"])
   end
 
   defp docs do
     [
-      main: "Combo.PubSub",
+      extras: ["README.md", "CHANGELOG.md", "LICENSE"],
+      source_url: @source_url,
       source_ref: "v#{@version}",
-      source_url: "https://github.com/combo-lab/combo_pubsub",
       before_closing_body_tag: %{
         html: """
         <script defer src="https://cdn.jsdelivr.net/npm/mermaid@11.6.0/dist/mermaid.min.js"></script>
