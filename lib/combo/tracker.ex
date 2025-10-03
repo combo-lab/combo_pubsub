@@ -1,4 +1,4 @@
-defmodule Phoenix.Tracker do
+defmodule Combo.Tracker do
   @moduledoc ~S"""
   Provides distributed presence tracking to processes.
 
@@ -17,20 +17,20 @@ defmodule Phoenix.Tracker do
         {MyTracker, [name: MyTracker, pubsub_server: MyApp.PubSub]}
       ]
 
-  Next, implement `MyTracker` with support for the `Phoenix.Tracker`
+  Next, implement `MyTracker` with support for the `Combo.Tracker`
   behaviour callbacks. An example of a minimal tracker could include:
 
       defmodule MyTracker do
-        use Phoenix.Tracker
+        use Combo.Tracker
 
         def start_link(opts) do
           opts = Keyword.merge([name: __MODULE__], opts)
-          Phoenix.Tracker.start_link(__MODULE__, opts, opts)
+          Combo.Tracker.start_link(__MODULE__, opts, opts)
         end
 
         def init(opts) do
           server = Keyword.fetch!(opts, :pubsub_server)
-          {:ok, %{pubsub_server: server, node_name: Phoenix.PubSub.node_name(server)}}
+          {:ok, %{pubsub_server: server, node_name: Combo.PubSub.node_name(server)}}
         end
 
         def handle_diff(diff, state) do
@@ -38,12 +38,12 @@ defmodule Phoenix.Tracker do
             for {key, meta} <- joins do
               IO.puts "presence join: key \"#{key}\" with meta #{inspect meta}"
               msg = {:join, key, meta}
-              Phoenix.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
+              Combo.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
             end
             for {key, meta} <- leaves do
               IO.puts "presence leave: key \"#{key}\" with meta #{inspect meta}"
               msg = {:leave, key, meta}
-              Phoenix.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
+              Combo.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
             end
           end
           {:ok, state}
@@ -52,7 +52,7 @@ defmodule Phoenix.Tracker do
 
   Trackers must implement `start_link/1`, `c:init/1`, and `c:handle_diff/2`.
   The `c:init/1` callback allows the tracker to manage its own state when
-  running within the `Phoenix.Tracker` server. The `handle_diff` callback
+  running within the `Combo.Tracker` server. The `handle_diff` callback
   is invoked with a diff of presence join and leave events, grouped by
   topic. As replicas heartbeat and replicate data, the local tracker state is
   merged with the remote data, and the diff is sent to the callback. The
@@ -83,7 +83,7 @@ defmodule Phoenix.Tracker do
 
   If you want a normal shutdown to immediately cause other nodes to see that
   tracker's presences as leaving, pass `permdown_on_shutdown: true`. On the
-  other hand, if you are using `Phoenix.Presence` for clients which will
+  other hand, if you are using `Combo.Presence` for clients which will
   immediately attempt to connect to a new node, it may be preferable to use
   `permdown_on_shutdown: false`, allowing the disconnected clients time to
   reconnect before removing their old presences, to avoid overwhelming clients
@@ -95,7 +95,7 @@ defmodule Phoenix.Tracker do
   """
   use Supervisor
   require Logger
-  alias Phoenix.Tracker.Shard
+  alias Combo.Tracker.Shard
 
   @type presence :: {key :: String.t(), meta :: map}
   @type topic :: String.t()
@@ -108,7 +108,7 @@ defmodule Phoenix.Tracker do
 
   defmacro __using__(_opts) do
     quote location: :keep do
-      @behaviour Phoenix.Tracker
+      @behaviour Combo.Tracker
 
       if Module.get_attribute(__MODULE__, :doc) == nil do
         @doc """
@@ -137,7 +137,7 @@ defmodule Phoenix.Tracker do
 
     * `tracker_name` - The registered name of the tracker server
     * `pid` - The Pid to track
-    * `topic` - The `Phoenix.PubSub` topic for this presence
+    * `topic` - The `Combo.PubSub` topic for this presence
     * `key` - The key identifying this presence
     * `meta` - The map of metadata to attach to this presence
 
@@ -146,10 +146,10 @@ defmodule Phoenix.Tracker do
 
   ## Examples
 
-      iex> Phoenix.Tracker.track(MyTracker, self(), "lobby", u.id, %{stat: "away"})
+      iex> Combo.Tracker.track(MyTracker, self(), "lobby", u.id, %{stat: "away"})
       {:ok, "1WpAofWYIAA="}
 
-      iex> Phoenix.Tracker.track(MyTracker, self(), "lobby", u.id, %{stat: "away"})
+      iex> Combo.Tracker.track(MyTracker, self(), "lobby", u.id, %{stat: "away"})
       {:error, {:already_tracked, #PID<0.56.0>, "lobby", "123"}}
   """
   @spec track(atom, pid, topic, term, map) :: {:ok, ref :: binary} | {:error, reason :: term}
@@ -164,17 +164,17 @@ defmodule Phoenix.Tracker do
 
     * `tracker_name` - The registered name of the tracker server
     * `pid` - The Pid to untrack
-    * `topic` - The `Phoenix.PubSub` topic to untrack for this presence
+    * `topic` - The `Combo.PubSub` topic to untrack for this presence
     * `key` - The key identifying this presence
 
   All presences for a given Pid can be untracked by calling the
-  `Phoenix.Tracker.untrack/2` signature of this function.
+  `Combo.Tracker.untrack/2` signature of this function.
 
   ## Examples
 
-      iex> Phoenix.Tracker.untrack(MyTracker, self(), "lobby", u.id)
+      iex> Combo.Tracker.untrack(MyTracker, self(), "lobby", u.id)
       :ok
-      iex> Phoenix.Tracker.untrack(MyTracker, self())
+      iex> Combo.Tracker.untrack(MyTracker, self())
       :ok
   """
   @spec untrack(atom, pid, topic, term) :: :ok
@@ -194,7 +194,7 @@ defmodule Phoenix.Tracker do
 
     * `tracker_name` - The registered name of the tracker server
     * `pid` - The Pid being tracked
-    * `topic` - The `Phoenix.PubSub` topic to update for this presence
+    * `topic` - The `Combo.PubSub` topic to update for this presence
     * `key` - The key identifying this presence
     * `meta` - Either a new map of metadata to attach to this presence,
       or a function. The function will receive the current metadata as
@@ -202,10 +202,10 @@ defmodule Phoenix.Tracker do
 
   ## Examples
 
-      iex> Phoenix.Tracker.update(MyTracker, self(), "lobby", u.id, %{stat: "zzz"})
+      iex> Combo.Tracker.update(MyTracker, self(), "lobby", u.id, %{stat: "zzz"})
       {:ok, "1WpAofWYIAA="}
 
-      iex> Phoenix.Tracker.update(MyTracker, self(), "lobby", u.id, fn meta -> Map.put(meta, :away, true) end)
+      iex> Combo.Tracker.update(MyTracker, self(), "lobby", u.id, fn meta -> Map.put(meta, :away, true) end)
       {:ok, "1WpAofWYIAA="}
   """
   @spec update(atom, pid, topic, term, map | (map -> map)) ::
@@ -221,41 +221,41 @@ defmodule Phoenix.Tracker do
   Lists all presences tracked under a given topic.
 
     * `tracker_name` - The registered name of the tracker server
-    * `topic` - The `Phoenix.PubSub` topic
+    * `topic` - The `Combo.PubSub` topic
 
   Returns a list of presences in key/metadata tuple pairs.
 
   ## Examples
 
-      iex> Phoenix.Tracker.list(MyTracker, "lobby")
+      iex> Combo.Tracker.list(MyTracker, "lobby")
       [{123, %{name: "user 123"}}, {456, %{name: "user 456"}}]
   """
   @spec list(atom, topic) :: [presence]
   def list(tracker_name, topic) do
     tracker_name
     |> Shard.name_for_topic(topic, pool_size(tracker_name))
-    |> Phoenix.Tracker.Shard.list(topic)
+    |> Combo.Tracker.Shard.list(topic)
   end
 
   @doc """
   Gets presences tracked under a given topic and key pair.
 
     * `tracker_name` - The registered name of the tracker server
-    * `topic` - The `Phoenix.PubSub` topic
+    * `topic` - The `Combo.PubSub` topic
     * `key` - The key of the presence
 
   Returns a list of presence metadata.
 
   ## Examples
 
-      iex> Phoenix.Tracker.get_by_key(MyTracker, "lobby", "user1")
+      iex> Combo.Tracker.get_by_key(MyTracker, "lobby", "user1")
       [{#PID<0.88.0>, %{name: "User 1"}}, {#PID<0.89.0>, %{name: "User 1"}}]
   """
   @spec get_by_key(atom, topic, term) :: [{pid, map}]
   def get_by_key(tracker_name, topic, key) do
     tracker_name
     |> Shard.name_for_topic(topic, pool_size(tracker_name))
-    |> Phoenix.Tracker.Shard.get_by_key(topic, key)
+    |> Combo.Tracker.Shard.get_by_key(topic, key)
   end
 
   @doc """
@@ -263,7 +263,7 @@ defmodule Phoenix.Tracker do
 
   ## Examples
 
-      iex> Phoenix.Tracker.graceful_permdown(MyTracker)
+      iex> Combo.Tracker.graceful_permdown(MyTracker)
       :ok
   """
   @spec graceful_permdown(atom) :: :ok
@@ -275,7 +275,7 @@ defmodule Phoenix.Tracker do
   @doc """
   Starts a tracker pool.
 
-    * `tracker` - The tracker module implementing the `Phoenix.Tracker` behaviour
+    * `tracker` - The tracker module implementing the `Combo.Tracker` behaviour
     * `tracker_arg` - The argument to pass to the tracker handler `c:init/1`
     * `pool_opts` - The list of options used to construct the shard pool
 
@@ -296,7 +296,7 @@ defmodule Phoenix.Tracker do
       (30s down detection). Note: This must be at least 2x the `broadcast_period`.
     * `permdown_on_shutdown` - boolean; whether to immediately call
       `graceful_permdown/1` on the tracker during a graceful shutdown. See
-      'Application Shutdown' section. You can only safely set this if `Phoenix.Tracker`
+      'Application Shutdown' section. You can only safely set this if `Combo.Tracker`
       is mounted at the root of your supervision tree and the strategy is `:one_for_one`.
       Default `false`.
     * `:permdown_period` - The interval in milliseconds to flag a replica
@@ -330,7 +330,7 @@ defmodule Phoenix.Tracker do
 
         %{
           id: shard_name,
-          start: {Phoenix.Tracker.Shard, :start_link, [tracker, tracker_opts, shard_opts]},
+          start: {Combo.Tracker.Shard, :start_link, [tracker, tracker_opts, shard_opts]},
           restart: :transient
         }
       end
@@ -341,7 +341,7 @@ defmodule Phoenix.Tracker do
           [
             %{
               id: :shutdown_handler,
-              start: {Phoenix.Tracker.ShutdownHandler, :start_link, [tracker]}
+              start: {Combo.Tracker.ShutdownHandler, :start_link, [tracker]}
             }
           ]
       else

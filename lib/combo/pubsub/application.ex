@@ -1,4 +1,4 @@
-defmodule Phoenix.PubSub.Application do
+defmodule Combo.PubSub.Application do
   @moduledoc false
   use Application
 
@@ -9,7 +9,7 @@ defmodule Phoenix.PubSub.Application do
 
   if Code.ensure_loaded?(:pg) do
     defp pg_children() do
-      [%{id: :pg, start: {:pg, :start_link, [Phoenix.PubSub]}}]
+      [%{id: :pg, start: {:pg, :start_link, [Combo.PubSub]}}]
     end
   else
     defp pg_children() do

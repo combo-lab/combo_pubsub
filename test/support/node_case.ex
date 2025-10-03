@@ -1,8 +1,8 @@
-defmodule Phoenix.PubSub.NodeCase do
+defmodule Combo.PubSub.NodeCase do
   @timeout 1000
   @heartbeat 100
   @permdown 1500
-  @pubsub Phoenix.PubSubTest
+  @pubsub Combo.PubSubTest
 
   defmacro __using__(opts \\ []) do
     quote do
@@ -17,25 +17,25 @@ defmodule Phoenix.PubSub.NodeCase do
   end
 
   defmodule TestTracker do
-    @behaviour Phoenix.Tracker
+    @behaviour Combo.Tracker
 
     def start_link(_opts), do: {:error, :not_implemented}
 
     def init(opts) do
       # store along side module name
       server = Keyword.fetch!(opts, :pubsub_server)
-      {:ok, %{pubsub_server: server, node_name: Phoenix.PubSub.node_name(server)}}
+      {:ok, %{pubsub_server: server, node_name: Combo.PubSub.node_name(server)}}
     end
 
     def handle_diff(diff, state) do
       for {topic, {joins, leaves}}  <- diff do
         for {key, meta} <- joins do
           msg = %{topic: topic, event: "presence_join", payload: {key, meta}}
-          Phoenix.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
+          Combo.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
         end
         for {key, meta} <- leaves do
           msg = %{topic: topic, event: "presence_leave", payload: {key, meta}}
-          Phoenix.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
+          Combo.PubSub.direct_broadcast!(state.node_name, state.pubsub_server, topic, msg)
         end
       end
       {:ok, state}
@@ -47,11 +47,11 @@ defmodule Phoenix.PubSub.NodeCase do
   end
 
   def subscribe(topic) do
-    :ok = Phoenix.PubSub.subscribe(@pubsub, topic)
+    :ok = Combo.PubSub.subscribe(@pubsub, topic)
   end
 
   def subscribe_to_server(server) do
-    :ok = Phoenix.PubSub.subscribe(@pubsub, namespaced_topic(server))
+    :ok = Combo.PubSub.subscribe(@pubsub, namespaced_topic(server))
   end
 
   defp namespaced_topic(server), do: "phx_presence:#{server}"
@@ -64,7 +64,7 @@ defmodule Phoenix.PubSub.NodeCase do
   end
 
   def graceful_permdown(node_name, server) do
-    call_node(node_name, fn -> Phoenix.Tracker.Shard.graceful_permdown(server) end)
+    call_node(node_name, fn -> Combo.Tracker.Shard.graceful_permdown(server) end)
   end
 
   def drop_gossips(server) do
@@ -77,12 +77,12 @@ defmodule Phoenix.PubSub.NodeCase do
 
   def start_shard(opts) do
     opts = Keyword.merge(default_tracker_opts(), Keyword.put_new(opts, :report_events_to, self()))
-    Phoenix.Tracker.Shard.start_link(TestTracker, opts, opts)
+    Combo.Tracker.Shard.start_link(TestTracker, opts, opts)
   end
 
   def start_pool(opts) do
     opts = Keyword.merge(default_pool_opts(), opts)
-    Phoenix.Tracker.start_link(TestTracker, opts, opts)
+    Combo.Tracker.start_link(TestTracker, opts, opts)
   end
 
   defp default_pool_opts do
@@ -101,7 +101,7 @@ defmodule Phoenix.PubSub.NodeCase do
 
   def track_presence(node_name, server, pid, topic, user_id, meta) do
     call_node(node_name, fn ->
-      Phoenix.Tracker.Shard.track(server, pid, topic, user_id, meta)
+      Combo.Tracker.Shard.track(server, pid, topic, user_id, meta)
     end)
   end
 
@@ -113,7 +113,7 @@ defmodule Phoenix.PubSub.NodeCase do
 
   def spy_on_pubsub(node_name, server \\ @pubsub, target_pid, topic) do
     call_node(node_name, fn ->
-      Phoenix.PubSub.subscribe(server, topic)
+      Combo.PubSub.subscribe(server, topic)
       loop = fn next ->
         receive do
           msg -> send target_pid, {node_name, msg}
@@ -190,7 +190,7 @@ defmodule Phoenix.PubSub.NodeCase do
 
   def broadcast_from_node(node, pubsub, topic, message) do
     call_node(node, fn ->
-      Phoenix.PubSub.broadcast(pubsub, topic, message)
+      Combo.PubSub.broadcast(pubsub, topic, message)
     end)
   end
 end

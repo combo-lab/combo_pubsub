@@ -1,6 +1,6 @@
-defmodule Phoenix.Tracker.DeltaGenerationTest do
+defmodule Combo.Tracker.DeltaGenerationTest do
   use ExUnit.Case, async: true
-  alias Phoenix.Tracker.{State, DeltaGeneration}
+  alias Combo.Tracker.{State, DeltaGeneration}
   import DeltaGeneration
 
   def sorted_clouds(clouds) do

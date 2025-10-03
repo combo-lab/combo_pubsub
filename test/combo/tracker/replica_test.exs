@@ -1,6 +1,6 @@
-defmodule Phoenix.Tracker.ReplicaTest do
+defmodule Combo.Tracker.ReplicaTest do
   use ExUnit.Case, async: true
-  alias Phoenix.Tracker.{Replica}
+  alias Combo.Tracker.{Replica}
 
   test "new/1 returns a new Replica with unique vsn" do
     replica1 = Replica.new("name")

@@ -1,6 +1,6 @@
-defmodule Phoenix.Tracker.Replica do
+defmodule Combo.Tracker.Replica do
   @moduledoc false
-  alias Phoenix.Tracker.Replica
+  alias Combo.Tracker.Replica
 
   @type name :: String.t()
   @type vsn :: integer

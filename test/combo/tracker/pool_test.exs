@@ -1,6 +1,6 @@
-defmodule Phoenix.Tracker.PoolTest do
-  use Phoenix.PubSub.NodeCase
-  alias Phoenix.Tracker
+defmodule Combo.Tracker.PoolTest do
+  use Combo.PubSub.NodeCase
+  alias Combo.Tracker
 
   setup config do
     server = config.test
@@ -128,7 +128,7 @@ defmodule Phoenix.Tracker.PoolTest do
       refs =
         for shard <- 0..(pool_size - 1) do
           server
-          |> Phoenix.Tracker.Shard.name_for_number(shard)
+          |> Combo.Tracker.Shard.name_for_number(shard)
           |> Process.whereis()
           |> Process.monitor()
         end

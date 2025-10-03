@@ -1,20 +1,20 @@
-defmodule Phoenix.PubSubTest do
+defmodule Combo.PubSubTest do
   @moduledoc """
   Sets up PubSub Adapter testcases.
 
   ## Usage
 
-  To test a PubSub adapter, set the `:test_adapter` on the `:phoenix_pubsub`
+  To test a PubSub adapter, set the `:test_adapter` on the `:combo_pubsub`
   configuration and require this file, ie:
 
       # your_pubsub_adapter_test.exs
-      Application.put_env(:phoenix_pubsub, :test_adapter, {Phoenix.PubSub.PG2, []})
-      Code.require_file "../deps/phoenix_pubsub/test/shared/pubsub_test.exs", __DIR__
+      Application.put_env(:combo_pubsub, :test_adapter, {Combo.PubSub.PG2, []})
+      Code.require_file "../deps/combo_pubsub/test/shared/pubsub_test.exs", __DIR__
 
   """
 
   use ExUnit.Case, async: true
-  alias Phoenix.PubSub
+  alias Combo.PubSub
 
   defp subscribers(config, topic) do
     Registry.lookup(config.pubsub, topic)
@@ -42,15 +42,15 @@ defmodule Phoenix.PubSubTest do
   setup config do
     size = config[:pool_size] || 1
     registry_size = config[:registry_size] || config[:registry_pool_size] || config[:pool_size] ||  1
-    {adapter, adapter_opts} = Application.get_env(:phoenix_pubsub, :test_adapter)
+    {adapter, adapter_opts} = Application.get_env(:combo_pubsub, :test_adapter)
     adapter_opts = [adapter: adapter, name: config.test, pool_size: size, registry_size: registry_size] ++ adapter_opts
-    start_supervised!({Phoenix.PubSub, adapter_opts})
+    start_supervised!({Combo.PubSub, adapter_opts})
 
     opts = %{
       pubsub: config.test,
       topic: to_string(config.test),
       pool_size: size,
-      node: Phoenix.PubSub.node_name(config.test),
+      node: Combo.PubSub.node_name(config.test),
       adapter_name: Module.concat(config.test, "Adapter")
     }
 

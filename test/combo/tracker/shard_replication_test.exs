@@ -1,6 +1,6 @@
-defmodule Phoenix.Tracker.ShardReplicationTest do
-  use Phoenix.PubSub.NodeCase
-  alias Phoenix.Tracker.{Replica, Shard, State}
+defmodule Combo.Tracker.ShardReplicationTest do
+  use Combo.PubSub.NodeCase
+  alias Combo.Tracker.{Replica, Shard, State}
 
   @primary :"primary@127.0.0.1"
   @node1 :"node1@127.0.0.1"

@@ -1,15 +1,15 @@
-defmodule Phoenix.PubSub.Supervisor do
+defmodule Combo.PubSub.Supervisor do
   @moduledoc false
   use Supervisor
 
   def start_link(opts) do
     unless Code.ensure_loaded?(:persistent_term) do
-      raise "Phoenix.PubSub v2.1 requires at least Erlang/OTP 21.3"
+      raise "Combo.PubSub v2.1 requires at least Erlang/OTP 21.3"
     end
 
     name =
       opts[:name] ||
-        raise ArgumentError, "the :name option is required when starting Phoenix.PubSub"
+        raise ArgumentError, "the :name option is required when starting Combo.PubSub"
 
     sup_name = Module.concat(name, "Supervisor")
     Supervisor.start_link(__MODULE__, opts, name: sup_name)
@@ -18,7 +18,7 @@ defmodule Phoenix.PubSub.Supervisor do
   @impl true
   def init(opts) do
     name = opts[:name]
-    adapter = opts[:adapter] || Phoenix.PubSub.PG2
+    adapter = opts[:adapter] || Combo.PubSub.PG2
     adapter_name = Module.concat(name, "Adapter")
 
     partitions =

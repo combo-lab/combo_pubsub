@@ -1,11 +1,11 @@
-defmodule Phoenix.PubSub.PG2 do
+defmodule Combo.PubSub.PG2 do
   @moduledoc """
-  Phoenix PubSub adapter based on `:pg`/`:pg2`.
+  Combo PubSub adapter based on `:pg`/`:pg2`.
 
   It runs on Distributed Erlang and is the default adapter.
   """
 
-  @behaviour Phoenix.PubSub.Adapter
+  @behaviour Combo.PubSub.Adapter
   use Supervisor
 
   ## Adapter callbacks
@@ -47,7 +47,7 @@ defmodule Phoenix.PubSub.PG2 do
 
   if Code.ensure_loaded?(:pg) do
     defp pg_members(group) do
-      :pg.get_members(Phoenix.PubSub, group)
+      :pg.get_members(Combo.PubSub, group)
     end
   else
     defp pg_members(group) do
@@ -81,7 +81,7 @@ defmodule Phoenix.PubSub.PG2 do
 
     children =
       for group <- listener_groups do
-        Supervisor.child_spec({Phoenix.PubSub.PG2Worker, {name, group}}, id: group)
+        Supervisor.child_spec({Combo.PubSub.PG2Worker, {name, group}}, id: group)
       end
 
     Supervisor.init(children, strategy: :one_for_one)
@@ -99,7 +99,7 @@ defmodule Phoenix.PubSub.PG2 do
   end
 end
 
-defmodule Phoenix.PubSub.PG2Worker do
+defmodule Combo.PubSub.PG2Worker do
   @moduledoc false
   use GenServer
 
@@ -116,7 +116,7 @@ defmodule Phoenix.PubSub.PG2Worker do
 
   @impl true
   def handle_info({:forward_to_local, topic, message, dispatcher}, pubsub) do
-    Phoenix.PubSub.local_broadcast(pubsub, topic, message, dispatcher)
+    Combo.PubSub.local_broadcast(pubsub, topic, message, dispatcher)
     {:noreply, pubsub}
   end
 
@@ -127,7 +127,7 @@ defmodule Phoenix.PubSub.PG2Worker do
 
   if Code.ensure_loaded?(:pg) do
     defp pg_join(group) do
-      :ok = :pg.join(Phoenix.PubSub, group, self())
+      :ok = :pg.join(Combo.PubSub, group, self())
     end
   else
     defp pg_join(group) do

@@ -1,7 +1,7 @@
-defmodule Phoenix.PubSub.DistributedTest do
-  use Phoenix.PubSub.NodeCase
+defmodule Combo.PubSub.DistributedTest do
+  use Combo.PubSub.NodeCase
 
-  alias Phoenix.PubSub
+  alias Combo.PubSub
 
   @node1 :"node1@127.0.0.1"
   @node2 :"node2@127.0.0.1"
@@ -9,7 +9,7 @@ defmodule Phoenix.PubSub.DistributedTest do
   @node4 :"node4@127.0.0.1"
 
   setup config do
-    {:ok, %{pubsub: Phoenix.PubSubTest, topic: Atom.to_string(config.test)}}
+    {:ok, %{pubsub: Combo.PubSubTest, topic: Atom.to_string(config.test)}}
   end
 
   test "broadcast targets all nodes", config do

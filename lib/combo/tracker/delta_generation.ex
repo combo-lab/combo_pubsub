@@ -1,7 +1,7 @@
-defmodule Phoenix.Tracker.DeltaGeneration do
+defmodule Combo.Tracker.DeltaGeneration do
   @moduledoc false
   require Logger
-  alias Phoenix.Tracker.{State, Clock, Replica}
+  alias Combo.Tracker.{State, Clock, Replica}
 
   @doc """
   Extracts minimal delta from generations to satisfy remote clock.

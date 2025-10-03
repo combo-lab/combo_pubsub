@@ -1,4 +1,4 @@
-defmodule Phoenix.Tracker.ShutdownHandler do
+defmodule Combo.Tracker.ShutdownHandler do
   @moduledoc false
   use GenServer
 
@@ -14,7 +14,7 @@ defmodule Phoenix.Tracker.ShutdownHandler do
 
   @impl GenServer
   def terminate(_reason, tracker) do
-    Phoenix.Tracker.graceful_permdown(tracker)
+    Combo.Tracker.graceful_permdown(tracker)
     :ok
   end
 end

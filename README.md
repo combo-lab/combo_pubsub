@@ -1,16 +1,16 @@
-# Phoenix.PubSub
+# Combo.PubSub
 
-> Distributed PubSub and Presence platform for the Phoenix Framework
+> Distributed PubSub and Presence.
 
-[![Build Status](https://github.com/phoenixframework/phoenix_pubsub/actions/workflows/ci.yml/badge.svg)](https://github.com/phoenixframework/phoenix_pubsub/actions/workflows/ci.yml)
+[![Build Status](https://github.com/combo-lab/combo_pubsub/actions/workflows/ci.yml/badge.svg)](https://github.com/combo-lab/combo_pubsub/actions/workflows/ci.yml)
 
 ## Usage
 
-Add `phoenix_pubsub` to your list of dependencies in `mix.exs`:
+Add `:combo_pubsub` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
-  [{:phoenix_pubsub, "~> 2.0"}]
+  [{:combo_pubsub, "~> 2.0"}]
 end
 ```
 
@@ -22,7 +22,7 @@ defmodule MyApp do
 
   def start(_type, _args) do
     children = [
-      {Phoenix.PubSub, name: MyApp.PubSub}
+      {Combo.PubSub, name: MyApp.PubSub}
     ]
 
     opts = [strategy: :one_for_one, name: MyApp.Supervisor]
@@ -34,14 +34,14 @@ end
 Now broadcast and subscribe:
 
 ```elixir
-Phoenix.PubSub.subscribe(MyApp.PubSub, "user:123")
-Phoenix.PubSub.broadcast(MyApp.PubSub, "user:123", :hello_world)
+Combo.PubSub.subscribe(MyApp.PubSub, "user:123")
+Combo.PubSub.broadcast(MyApp.PubSub, "user:123", :hello_world)
 ```
 
 ## Testing
 
 Testing by default spawns nodes internally for distributed tests.
-To run tests that do not require clustering, exclude  the `clustered` tag:
+To run tests that do not require clustering, exclude the `clustered` tag:
 
 ```shell
 $ mix test --exclude clustered

@@ -1,16 +1,15 @@
-defmodule Phoenix.PubSub.Mixfile do
+defmodule Combo.PubSub.Mixfile do
   use Mix.Project
 
   @version "2.1.3"
 
   def project do
     [
-      app: :phoenix_pubsub,
+      app: :combo_pubsub,
       version: @version,
       elixir: "~> 1.6",
-      name: "Phoenix.PubSub",
+      name: "Combo.PubSub",
       description: "Distributed PubSub and Presence platform",
-      homepage_url: "http://www.phoenixframework.org",
       elixirc_paths: elixirc_paths(Mix.env()),
       package: package(),
       docs: docs(),
@@ -23,7 +22,7 @@ defmodule Phoenix.PubSub.Mixfile do
 
   def application do
     [
-      mod: {Phoenix.PubSub.Application, []},
+      mod: {Combo.PubSub.Application, []},
       extra_applications: [:logger, :crypto],
     ]
   end
@@ -38,16 +37,16 @@ defmodule Phoenix.PubSub.Mixfile do
     [
       maintainers: ["Chris McCord", "José Valim", "Alexander Songe", "Gary Rennie"],
       licenses: ["MIT"],
-      links: %{github: "https://github.com/phoenixframework/phoenix_pubsub"},
+      links: %{github: "https://github.com/combo-lab/combo_pubsub"},
       files: ~w(lib test/shared CHANGELOG.md LICENSE.md mix.exs README.md)
     ]
   end
 
   defp docs do
     [
-      main: "Phoenix.PubSub",
+      main: "Combo.PubSub",
       source_ref: "v#{@version}",
-      source_url: "https://github.com/phoenixframework/phoenix_pubsub",
+      source_url: "https://github.com/combo-lab/combo_pubsub",
 
       before_closing_body_tag: %{
         html: """

@@ -1,4 +1,4 @@
-defmodule Phoenix.PubSub.Cluster do
+defmodule Combo.PubSub.Cluster do
   @moduledoc """
   A helper module for testing distributed code.
   Requires `epmd` to be running in order to work:
@@ -74,10 +74,10 @@ defmodule Phoenix.PubSub.Cluster do
   end
 
   defp start_pubsub(node, opts) do
-    opts = [name: Phoenix.PubSubTest, pool_size: 4] |> Keyword.merge(opts)
+    opts = [name: Combo.PubSubTest, pool_size: 4] |> Keyword.merge(opts)
 
     args = [
-      [{Phoenix.PubSub, opts}],
+      [{Combo.PubSub, opts}],
       [strategy: :one_for_one]
     ]
 

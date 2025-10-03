@@ -1,6 +1,6 @@
-defmodule Phoenix.Tracker.StateTest do
+defmodule Combo.Tracker.StateTest do
   use ExUnit.Case, async: true
-  alias Phoenix.Tracker.{State}
+  alias Combo.Tracker.{State}
 
   def sorted_clouds(clouds) do
     clouds

@@ -1,6 +1,6 @@
-defmodule Phoenix.Tracker.Clock do
+defmodule Combo.Tracker.Clock do
   @moduledoc false
-  alias Phoenix.Tracker.State
+  alias Combo.Tracker.State
 
   @type context :: State.context
   @type clock :: {State.name, context}

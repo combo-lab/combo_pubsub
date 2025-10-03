@@ -1,7 +1,7 @@
-defmodule Phoenix.Tracker.Shard do
+defmodule Combo.Tracker.Shard do
   @moduledoc false
   use GenServer
-  alias Phoenix.Tracker.{Clock, State, Replica, DeltaGeneration}
+  alias Combo.Tracker.{Clock, State, Replica, DeltaGeneration}
   require Logger
 
   @type presence :: {key :: String.t, meta :: map()}
@@ -35,7 +35,7 @@ defmodule Phoenix.Tracker.Shard do
     current_sample_count: integer
   }
 
-  ## Used by Phoenix.Tracker for dispatching to appropriate shard
+  ## Used by Combo.Tracker for dispatching to appropriate shard
   @spec name_for_number(atom, non_neg_integer) :: atom
   def name_for_number(prefix, n) when is_number(n) do
     :"#{prefix}_shard#{n}"
@@ -119,7 +119,7 @@ defmodule Phoenix.Tracker.Shard do
          :ok <- validate_permdown_period(permdown_period, down_period),
          {:ok, tracker_state} <- tracker.init(tracker_opts) do
 
-      node_name        = Phoenix.PubSub.node_name(pubsub_server)
+      node_name        = Combo.PubSub.node_name(pubsub_server)
       namespaced_topic = namespaced_topic(shard_name)
       replica          = Replica.new(node_name)
 
@@ -285,7 +285,7 @@ defmodule Phoenix.Tracker.Shard do
   end
 
   def handle_call(:unsubscribe, _from, state) do
-    Phoenix.PubSub.unsubscribe(state.pubsub_server, state.namespaced_topic)
+    Combo.PubSub.unsubscribe(state.pubsub_server, state.namespaced_topic)
     {:reply, :ok, state}
   end
 
@@ -295,7 +295,7 @@ defmodule Phoenix.Tracker.Shard do
   end
 
   defp subscribe(pubsub_server, namespaced_topic) do
-    Phoenix.PubSub.subscribe(pubsub_server, namespaced_topic, link: true)
+    Combo.PubSub.subscribe(pubsub_server, namespaced_topic, link: true)
   end
 
   defp put_update(state, pid, topic, key, meta, %{phx_ref: prev_ref} = prev_meta) do
@@ -466,11 +466,11 @@ defmodule Phoenix.Tracker.Shard do
   end
 
   defp broadcast_from(state, from, msg) do
-    Phoenix.PubSub.broadcast_from!(state.pubsub_server, from, state.namespaced_topic, msg)
+    Combo.PubSub.broadcast_from!(state.pubsub_server, from, state.namespaced_topic, msg)
   end
 
   defp direct_broadcast(state, target_node, msg) do
-    Phoenix.PubSub.direct_broadcast!(target_node, state.pubsub_server, state.namespaced_topic, msg)
+    Combo.PubSub.direct_broadcast!(target_node, state.pubsub_server, state.namespaced_topic, msg)
   end
 
   defp broadcast_delta_heartbeat(%{presences: presences} = state) do

@@ -1,6 +1,6 @@
 # Changelog
 
-This new version of Phoenix.PubSub provides a simpler, more extensible, and more performant Phoenix.PubSub API. For users of Phoenix.PubSub, the API is the same, although frameworks and other adapters will have to migrate accordingly (which often means less code).
+This new version of Combo.PubSub provides a simpler, more extensible, and more performant Combo.PubSub API. For users of Combo.PubSub, the API is the same, although frameworks and other adapters will have to migrate accordingly (which often means less code).
 
 ## 2.1.4 (2024-09-27)
 
@@ -25,7 +25,7 @@ This new version of Phoenix.PubSub provides a simpler, more extensible, and more
 ## 2.1.0 (2022-04-01)
 
 ### Enhancements
-  - Support `handle_info` callback on `Phoenix.Tracker`
+  - Support `handle_info` callback on `Combo.Tracker`
 
 ## 2.0.0 (2020-04-14)
 

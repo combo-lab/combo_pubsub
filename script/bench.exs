@@ -8,7 +8,7 @@ defmodule Bench do
 
   """
 
-  alias Phoenix.Tracker.State
+  alias Combo.Tracker.State
 
   def run(opts) do
     {opts, [], []} = OptionParser.parse(opts, strict: [size: :integer,

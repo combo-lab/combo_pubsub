@@ -1,18 +1,18 @@
-defmodule Phoenix.PubSub do
+defmodule Combo.PubSub do
   @moduledoc """
   Realtime Publisher/Subscriber service.
 
   ## Getting started
 
-  You start Phoenix.PubSub directly in your supervision
+  You start Combo.PubSub directly in your supervision
   tree:
 
-      {Phoenix.PubSub, name: :my_pubsub}
+      {Combo.PubSub, name: :my_pubsub}
 
   You can now use the functions in this module to subscribe
   and broadcast messages:
 
-      iex> alias Phoenix.PubSub
+      iex> alias Combo.PubSub
       iex> PubSub.subscribe(:my_pubsub, "user:123")
       :ok
       iex> Process.info(self(), :messages)
@@ -24,12 +24,12 @@ defmodule Phoenix.PubSub do
 
   ## Adapters
 
-  Phoenix PubSub was designed to be flexible and support
+  Combo PubSub was designed to be flexible and support
   multiple backends. There are two officially supported
   backends:
 
-    * `Phoenix.PubSub.PG2` - the default adapter that ships
-      as part of Phoenix.PubSub. It uses Distributed Elixir,
+    * `Combo.PubSub.PG2` - the default adapter that ships
+      as part of Combo.PubSub. It uses Distributed Elixir,
       directly exchanging notifications between servers.
       It supports a `:pool_size` option to be given alongside
       the name, defaults to `1`. Note the `:pool_size` must
@@ -37,14 +37,14 @@ defmodule Phoenix.PubSub do
       configure the pool size based on `System.schedulers_online/0`,
       especially if you are using machines with different specs.
 
-    * `Phoenix.PubSub.Redis` - uses Redis to exchange data between
-      servers. It requires the `:phoenix_pubsub_redis` dependency.
+    * `Combo.PubSub.Redis` - uses Redis to exchange data between
+      servers. It requires the `:combo_pubsub_redis` dependency.
 
-  See `Phoenix.PubSub.Adapter` to implement a custom adapter.
+  See `Combo.PubSub.Adapter` to implement a custom adapter.
 
   ## Custom dispatching
 
-  Phoenix.PubSub allows developers to perform custom dispatching
+  Combo.PubSub allows developers to perform custom dispatching
   by passing a `dispatcher` module which is responsible for local
   message deliveries.
 
@@ -55,12 +55,12 @@ defmodule Phoenix.PubSub do
 
   You may want to use the dispatcher to perform special delivery for
   certain subscriptions. This can be done by passing the :metadata
-  option during subscriptions. For instance, Phoenix Channels use a
+  option during subscriptions. For instance, Combo Channels use a
   custom `value` to provide "fastlaning", allowing messages broadcast
   to thousands or even millions of users to be encoded once and written
   directly to sockets instead of being encoded per channel.
 
-  ## Safe pool size migration (when using `Phoenix.PubSub.PG2` adapter)
+  ## Safe pool size migration (when using `Combo.PubSub.PG2` adapter)
 
   When you need to change the pool size in a running cluster,
   you can use the `broadcast_pool_size` option to ensure no
@@ -71,7 +71,7 @@ defmodule Phoenix.PubSub do
 
   1. Initial state - Current configuration with `pool_size: 1`:
   ```
-  {Phoenix.PubSub, name: :my_pubsub, pool_size: 1}
+  {Combo.PubSub, name: :my_pubsub, pool_size: 1}
   ```
 
   ```mermaid
@@ -89,7 +89,7 @@ defmodule Phoenix.PubSub do
 
   2. First deployment - Set the new pool size but keep broadcasting on the old size:
   ```
-  {Phoenix.PubSub, name: :my_pubsub, pool_size: 2, broadcast_pool_size: 1}
+  {Combo.PubSub, name: :my_pubsub, pool_size: 2, broadcast_pool_size: 1}
   ```
 
   ```mermaid
@@ -110,7 +110,7 @@ defmodule Phoenix.PubSub do
 
   3. Final deployment - All nodes running with new pool size:
   ```
-  {Phoenix.PubSub, name: :my_pubsub, pool_size: 2}
+  {Combo.PubSub, name: :my_pubsub, pool_size: 2}
   ```
 
   ```mermaid
@@ -161,7 +161,7 @@ defmodule Phoenix.PubSub do
   ## Options
 
     * `:name` - the name of the pubsub to be started
-    * `:adapter` - the adapter to use (defaults to `Phoenix.PubSub.PG2`)
+    * `:adapter` - the adapter to use (defaults to `Combo.PubSub.PG2`)
     * `:pool_size` - number of pubsub partitions to launch
       (defaults to one partition for every 4 cores)
     * `:registry_size` - number of `Registry` partitions to launch
@@ -174,7 +174,7 @@ defmodule Phoenix.PubSub do
 
   """
   @spec child_spec(keyword) :: Supervisor.child_spec()
-  defdelegate child_spec(options), to: Phoenix.PubSub.Supervisor
+  defdelegate child_spec(options), to: Combo.PubSub.Supervisor
 
   @doc """
   Subscribes the caller to the PubSub adapter's topic.
@@ -188,7 +188,7 @@ defmodule Phoenix.PubSub do
   Callers should only subscribe to a given topic a single time.
   Duplicate subscriptions for a Pid/topic pair are allowed and
   will cause duplicate events to be sent; however, when using
-  `Phoenix.PubSub.unsubscribe/2`, all duplicate subscriptions
+  `Combo.PubSub.unsubscribe/2`, all duplicate subscriptions
   will be dropped.
 
   ## Options

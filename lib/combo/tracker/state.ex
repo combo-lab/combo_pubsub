@@ -1,6 +1,6 @@
-defmodule Phoenix.Tracker.State do
+defmodule Combo.Tracker.State do
   @moduledoc false
-  alias Phoenix.Tracker.{State, Clock}
+  alias Combo.Tracker.{State, Clock}
 
   @type name :: term
   @type topic :: String.t()
@@ -47,8 +47,8 @@ defmodule Phoenix.Tracker.State do
 
   ## Examples
 
-      iex> Phoenix.Tracker.State.new(:replica1, :shard_name)
-      %Phoenix.Tracker.State{...}
+      iex> Combo.Tracker.State.new(:replica1, :shard_name)
+      %Combo.Tracker.State{...}
 
   """
   @spec new(name, atom) :: t
@@ -321,9 +321,9 @@ defmodule Phoenix.Tracker.State do
   ## Examples
 
       iex> {s1, joined, left} =
-           Phoenix.Tracker.State.merge(s1, Phoenix.Tracker.State.extract(s2))
+           Combo.Tracker.State.merge(s1, Combo.Tracker.State.extract(s2))
 
-      {%Phoenix.Tracker.State{}, [...], [...]}
+      {%Combo.Tracker.State{}, [...], [...]}
   """
   @spec merge(local :: t, {remote :: t, values} | delta) ::
           {new_local :: t, joins :: [value], leaves :: [value]}

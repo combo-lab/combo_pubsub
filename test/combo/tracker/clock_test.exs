@@ -1,6 +1,6 @@
-defmodule Phoenix.TrackerClockTest do
+defmodule Combo.TrackerClockTest do
   use ExUnit.Case
-  alias Phoenix.Tracker.Clock
+  alias Combo.Tracker.Clock
 
   test "dominates?" do
     clock1 = %{a: 1, b: 2, c: 3}
