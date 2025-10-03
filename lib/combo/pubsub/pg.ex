@@ -1,6 +1,6 @@
 defmodule Combo.PubSub.PG do
   @moduledoc """
-  `Combo.PubSub` adapter based on `:pg`/`:pg2`.
+  `Combo.PubSub` adapter based on `:pg`.
 
   It runs on Distributed Erlang and is the default adapter.
   """
@@ -45,14 +45,8 @@ defmodule Combo.PubSub.PG do
     elem(groups, :erlang.phash2(self(), tuple_size(groups)))
   end
 
-  if Code.ensure_loaded?(:pg) do
-    defp pg_members(group) do
-      :pg.get_members(Combo.PubSub, group)
-    end
-  else
-    defp pg_members(group) do
-      :pg2.get_members({:phx, group})
-    end
+  defp pg_members(group) do
+    :pg.get_members(Combo.PubSub, group)
   end
 
   ## Supervisor callbacks
@@ -128,16 +122,7 @@ defmodule Combo.PubSub.PGWorker do
     {:noreply, pubsub}
   end
 
-  if Code.ensure_loaded?(:pg) do
-    defp pg_join(group) do
-      :ok = :pg.join(Combo.PubSub, group, self())
-    end
-  else
-    defp pg_join(group) do
-      namespace = {:phx, group}
-      :ok = :pg2.create(namespace)
-      :ok = :pg2.join(namespace, self())
-      :ok
-    end
+  defp pg_join(group) do
+    :ok = :pg.join(Combo.PubSub, group, self())
   end
 end
