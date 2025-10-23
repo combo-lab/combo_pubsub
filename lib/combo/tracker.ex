@@ -96,7 +96,6 @@ defmodule Combo.Tracker do
   """
 
   use Supervisor
-  require Logger
   alias Combo.Tracker.Shard
 
   @type presence :: {key :: String.t(), meta :: map}
