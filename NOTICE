@@ -1,0 +1,7 @@
+This software contains code derived from:
+
+- phoenixframework/phoenix_pubsub (https://github.com/phoenixframework/phoenix_pubsub)
+  Copyright Chris McCord
+  Licensed under MIT License
+
+Full license texts are available in the LICENSES directory.
