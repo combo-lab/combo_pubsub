@@ -205,10 +205,9 @@ defmodule Combo.PubSubTest do
   end
 
   defp assert_ets_duplicate_count(pubsub, count) do
-    current_version = System.version()
     result = :ets.lookup_element(pubsub, -2, 2)
 
-    if Version.compare(current_version, "1.19.0") in [:eq, :gt] do
+    if Version.match?(System.version(), ">= 1.19.0") do
       assert {{:duplicate, :pid}, ^count, _} = result
     else
       assert {:duplicate, ^count, _} = result
