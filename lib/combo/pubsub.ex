@@ -218,6 +218,30 @@ defmodule Combo.PubSub do
   end
 
   @doc """
+  Unsubscribes the caller from the PubSub adapter's topic taking the metadata
+  into consideration.
+
+  Unlike `unsubscribe/2`, this function matches on the metadata provided as an
+  option when subscribed. This is useful when you have multiple subscriptions for
+  the same topic with different metadata.
+
+  ## Example
+
+      iex> PubSub.subscribe_match(:my_pubsub, "users:123", metadata: :fast)
+      :ok
+      iex> PubSub.subscribe_match(:my_pubsub, "users:123", metadata: :slow)
+      :ok
+      iex> PubSub.unsubscribe_match(:my_pubsub, "users:123", :fast)
+      :ok
+      # Only the :fast subscription is removed, :slow remains active
+
+  """
+  @spec unsubscribe_match(t, topic, term) :: :ok
+  def unsubscribe_match(pubsub, topic, metadata) when is_atom(pubsub) and is_binary(topic) do
+    Registry.unregister_match(pubsub, topic, metadata)
+  end
+
+  @doc """
   Broadcasts message on given topic across the whole cluster.
 
   ## Arguments
