@@ -172,6 +172,8 @@ defmodule Combo.PubSub do
       ensure no messages are lost. See the "Safe Pool Size Migration" section
       in the module documentation.
       Defaults to the value of `:pool_size`.
+    * `:dispatcher` - the default dispatcher module for broadcasts.
+      Defaults to `Combo.PubSub`. Can be overridden at the function level.
 
   """
   @spec child_spec(keyword) :: Supervisor.child_spec()
@@ -254,9 +256,10 @@ defmodule Combo.PubSub do
   See the "Custom dispatching" section in the module documentation.
   """
   @spec broadcast(t, topic, message, dispatcher) :: :ok | {:error, term}
-  def broadcast(pubsub, topic, message, dispatcher \\ __MODULE__)
+  def broadcast(pubsub, topic, message, dispatcher \\ nil)
       when is_atom(pubsub) and is_binary(topic) and is_atom(dispatcher) do
-    {:ok, {adapter, name}} = Registry.meta(pubsub, :pubsub)
+    {:ok, {adapter, name, default_dispatcher}} = Registry.meta(pubsub, :pubsub)
+    dispatcher = dispatcher || default_dispatcher
 
     with :ok <- adapter.broadcast(name, topic, message, dispatcher) do
       dispatch(pubsub, :none, topic, message, dispatcher)
@@ -281,9 +284,10 @@ defmodule Combo.PubSub do
   See the "Custom dispatching" section in the module documentation.
   """
   @spec broadcast_from(t, pid, topic, message, dispatcher) :: :ok | {:error, term}
-  def broadcast_from(pubsub, from, topic, message, dispatcher \\ __MODULE__)
+  def broadcast_from(pubsub, from, topic, message, dispatcher \\ nil)
       when is_atom(pubsub) and is_pid(from) and is_binary(topic) and is_atom(dispatcher) do
-    {:ok, {adapter, name}} = Registry.meta(pubsub, :pubsub)
+    {:ok, {adapter, name, default_dispatcher}} = Registry.meta(pubsub, :pubsub)
+    dispatcher = dispatcher || default_dispatcher
 
     with :ok <- adapter.broadcast(name, topic, message, dispatcher) do
       dispatch(pubsub, from, topic, message, dispatcher)
@@ -303,8 +307,10 @@ defmodule Combo.PubSub do
   See the "Custom dispatching" section in the module documentation.
   """
   @spec local_broadcast(t, topic, message, dispatcher) :: :ok
-  def local_broadcast(pubsub, topic, message, dispatcher \\ __MODULE__)
+  def local_broadcast(pubsub, topic, message, dispatcher \\ nil)
       when is_atom(pubsub) and is_binary(topic) and is_atom(dispatcher) do
+    {:ok, {_adapter, _name, default_dispatcher}} = Registry.meta(pubsub, :pubsub)
+    dispatcher = dispatcher || default_dispatcher
     dispatch(pubsub, :none, topic, message, dispatcher)
   end
 
@@ -325,8 +331,10 @@ defmodule Combo.PubSub do
   See the "Custom dispatching" section in the module documentation.
   """
   @spec local_broadcast_from(t, pid, topic, message, dispatcher) :: :ok
-  def local_broadcast_from(pubsub, from, topic, message, dispatcher \\ __MODULE__)
+  def local_broadcast_from(pubsub, from, topic, message, dispatcher \\ nil)
       when is_atom(pubsub) and is_pid(from) and is_binary(topic) and is_atom(dispatcher) do
+    {:ok, {_adapter, _name, default_dispatcher}} = Registry.meta(pubsub, :pubsub)
+    dispatcher = dispatcher || default_dispatcher
     dispatch(pubsub, from, topic, message, dispatcher)
   end
 
@@ -347,9 +355,10 @@ defmodule Combo.PubSub do
   See the "Custom dispatching" section in the module documentation.
   """
   @spec direct_broadcast(node_name, t, topic, message, dispatcher) :: :ok | {:error, term}
-  def direct_broadcast(node_name, pubsub, topic, message, dispatcher \\ __MODULE__)
+  def direct_broadcast(node_name, pubsub, topic, message, dispatcher \\ nil)
       when is_atom(pubsub) and is_binary(topic) and is_atom(dispatcher) do
-    {:ok, {adapter, name}} = Registry.meta(pubsub, :pubsub)
+    {:ok, {adapter, name, default_dispatcher}} = Registry.meta(pubsub, :pubsub)
+    dispatcher = dispatcher || default_dispatcher
     adapter.direct_broadcast(name, node_name, topic, message, dispatcher)
   end
 
@@ -357,7 +366,7 @@ defmodule Combo.PubSub do
   Raising version of `broadcast/4`.
   """
   @spec broadcast!(t, topic, message, dispatcher) :: :ok
-  def broadcast!(pubsub, topic, message, dispatcher \\ __MODULE__) do
+  def broadcast!(pubsub, topic, message, dispatcher \\ nil) do
     case broadcast(pubsub, topic, message, dispatcher) do
       :ok -> :ok
       {:error, error} -> raise BroadcastError, "broadcast failed: #{inspect(error)}"
@@ -368,7 +377,7 @@ defmodule Combo.PubSub do
   Raising version of `broadcast_from/5`.
   """
   @spec broadcast_from!(t, pid, topic, message, dispatcher) :: :ok
-  def broadcast_from!(pubsub, from, topic, message, dispatcher \\ __MODULE__) do
+  def broadcast_from!(pubsub, from, topic, message, dispatcher \\ nil) do
     case broadcast_from(pubsub, from, topic, message, dispatcher) do
       :ok -> :ok
       {:error, error} -> raise BroadcastError, "broadcast failed: #{inspect(error)}"
@@ -379,7 +388,7 @@ defmodule Combo.PubSub do
   Raising version of `direct_broadcast/5`.
   """
   @spec direct_broadcast!(node_name, t, topic, message, dispatcher) :: :ok
-  def direct_broadcast!(node_name, pubsub, topic, message, dispatcher \\ __MODULE__) do
+  def direct_broadcast!(node_name, pubsub, topic, message, dispatcher \\ nil) do
     case direct_broadcast(node_name, pubsub, topic, message, dispatcher) do
       :ok -> :ok
       {:error, error} -> raise BroadcastError, "broadcast failed: #{inspect(error)}"
@@ -391,7 +400,7 @@ defmodule Combo.PubSub do
   """
   @spec node_name(t) :: node_name
   def node_name(pubsub) do
-    {:ok, {adapter, name}} = Registry.meta(pubsub, :pubsub)
+    {:ok, {adapter, name, _dispatcher}} = Registry.meta(pubsub, :pubsub)
     adapter.node_name(name)
   end
 

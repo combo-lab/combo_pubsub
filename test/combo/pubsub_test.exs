@@ -1,6 +1,8 @@
 defmodule Combo.PubSub.UnitTest do
   use ExUnit.Case, async: true
 
+  alias Combo.PubSub
+
   describe "child_spec/1" do
     test "expects a name" do
       {:error, {{:EXIT, {exception, _}}, _}} = start_supervised({Combo.PubSub, []})
@@ -21,6 +23,84 @@ defmodule Combo.PubSub.UnitTest do
 
     defp name do
       :"#{__MODULE__}_#{:crypto.strong_rand_bytes(8) |> Base.encode16()}"
+    end
+  end
+
+  describe "default dispatcher" do
+    defmodule TestDispatcher do
+      def dispatch(entries, :none, message) do
+        for {pid, _} <- entries do
+          send(pid, {:custom_dispatched, message})
+        end
+
+        :ok
+      end
+
+      def dispatch(entries, from, message) do
+        for {pid, _} <- entries, pid != from do
+          send(pid, {:custom_dispatched, message})
+        end
+
+        :ok
+      end
+    end
+
+    test "defaults to Combo.PubSub when no dispatcher configured" do
+      name = :"ps_default_#{:erlang.unique_integer([:positive])}"
+      start_supervised!({PubSub, name: name})
+
+      PubSub.subscribe(name, "topic")
+      PubSub.broadcast(name, "topic", :hello)
+      assert_receive :hello
+    end
+
+    test "uses configured dispatcher for broadcast/3" do
+      name = :"ps_custom_#{:erlang.unique_integer([:positive])}"
+      start_supervised!({PubSub, name: name, dispatcher: TestDispatcher})
+
+      PubSub.subscribe(name, "topic")
+      PubSub.broadcast(name, "topic", :hello)
+      assert_receive {:custom_dispatched, :hello}
+      refute_received :hello
+    end
+
+    test "uses configured dispatcher for local_broadcast/3" do
+      name = :"ps_local_#{:erlang.unique_integer([:positive])}"
+      start_supervised!({PubSub, name: name, dispatcher: TestDispatcher})
+
+      PubSub.subscribe(name, "topic")
+      PubSub.local_broadcast(name, "topic", :hello)
+      assert_receive {:custom_dispatched, :hello}
+    end
+
+    test "uses configured dispatcher for broadcast_from/4" do
+      name = :"ps_from_#{:erlang.unique_integer([:positive])}"
+      start_supervised!({PubSub, name: name, dispatcher: TestDispatcher})
+
+      PubSub.subscribe(name, "topic")
+      other = spawn(fn -> Process.sleep(:infinity) end)
+      PubSub.broadcast_from(name, other, "topic", :hello)
+      assert_receive {:custom_dispatched, :hello}
+    end
+
+    test "explicit dispatcher overrides the configured default" do
+      name = :"ps_override_#{:erlang.unique_integer([:positive])}"
+      start_supervised!({PubSub, name: name, dispatcher: TestDispatcher})
+
+      PubSub.subscribe(name, "topic")
+      # Pass Combo.PubSub explicitly to override the configured TestDispatcher
+      PubSub.broadcast(name, "topic", :hello, PubSub)
+      assert_receive :hello
+      refute_received {:custom_dispatched, :hello}
+    end
+
+    test "bang variants use configured dispatcher" do
+      name = :"ps_bang_#{:erlang.unique_integer([:positive])}"
+      start_supervised!({PubSub, name: name, dispatcher: TestDispatcher})
+
+      PubSub.subscribe(name, "topic")
+      PubSub.broadcast!(name, "topic", :hello)
+      assert_receive {:custom_dispatched, :hello}
     end
   end
 end
