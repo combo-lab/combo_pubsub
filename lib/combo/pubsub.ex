@@ -174,6 +174,14 @@ defmodule Combo.PubSub do
       Defaults to the value of `:pool_size`.
     * `:dispatcher` - the default dispatcher module for broadcasts.
       Defaults to `Combo.PubSub`. Can be overridden at the function level.
+    * `:group_by` - controls how the underlying `Registry` partitions
+      subscriptions, either `:pid` or `:key` (defaults to `:pid`). With
+      `:pid`, entries are grouped by subscriber pid — best when topics
+      have many subscribers each. With `:key`, entries are grouped by
+      topic so key-based lookups touch a single partition — best when
+      there are many topics with few subscribers each. `:key` requires
+      Elixir v1.19 or later. See `Registry.start_link/1` for the
+      underlying trade-offs.
 
   """
   @spec child_spec(keyword) :: Supervisor.child_spec()
