@@ -20,6 +20,10 @@ jobs:
       # And, only the most recent 3 versions of Elixir are involved.
       matrix:
         include:
+          # Elixir v1.20
+          - { elixir: "1.20.x", otp: "29.x" }
+          - { elixir: "1.20.x", otp: "28.x" }
+          - { elixir: "1.20.x", otp: "27.x" }
           # Elixir v1.19
           - { elixir: "1.19.x", otp: "28.x" }
           - { elixir: "1.19.x", otp: "27.x" }
