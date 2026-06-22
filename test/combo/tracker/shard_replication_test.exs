@@ -84,7 +84,7 @@ defmodule Combo.Tracker.ShardReplicationTest do
     # primary sends transfer_req to node with most dominance
     assert_receive {node, {:pub, :transfer_req, ref, {@primary, _vsn}, _state}}, @timeout * 2
     # primary does not send transfer_req to other node, since in dominant node's future
-    refute_received {_other, {:pub, :transfer_req, _ref, {@primary, _vsn}, _state}}, @timeout * 2
+    refute_receive {_other, {:pub, :transfer_req, _ref, {@primary, _vsn}, _state}}, @timeout * 2
     # dominant node fulfills transfer request and sends transfer_ack to primary
     assert_receive {:pub, :transfer_ack, ^ref, {^node, _vsn}, _state}, @timeout
 
