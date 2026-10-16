@@ -41,23 +41,6 @@ defmodule Combo.PubSub do
 
   See `Combo.PubSub.Adapter` to implement a custom adapter.
 
-  ## Custom dispatching
-
-  Combo.PubSub allows developers to perform custom dispatching by passing a
-  `dispatcher` module which is responsible for local message deliveries.
-
-  The dispatcher must be available on all nodes running the PubSub system.
-  The `dispatch/3` function of the given module will be invoked with the
-  subscriptions entries, the broadcaster identifier (either a pid or `:none`)
-  , and the message to broadcast.
-
-  You may want to use the dispatcher to perform special delivery for certain
-  subscriptions. This can be done by passing the `:metadata` option during
-  subscriptions. For instance, Combo Channels use a custom `value` to provide
-  "fastlaning", allowing messages broadcast to thousands or even millions of
-  users to be encoded once and written directly to sockets instead of being
-  encoded per channel.
-
   ## Safe pool size migration (when using `Combo.PubSub.PG` adapter)
 
   When you need to change the pool size in a running cluster, you can use the
@@ -205,14 +188,12 @@ defmodule Combo.PubSub do
 
   ## Options
 
-   * `:sender` - sets a custom `{module, metadata}` tuple that
-      is called when broadcasting a message. See "Custom senders"
-      section in the module documentation
+   * `:sender` - sets a custom `{module, metadata}` tuple that is called when
+      broadcasting a message. See "Combo.PubSub.Sender" for more information.
 
     * `:metadata` - DEPRECATED. Use `:sender` instead.
       provides metadata to be attached to this subscription.
-      The metadata can be used by custom dispatching mechanisms. See the
-      "Custom dispatching" section in the module documentation.
+      The metadata can be used by custom dispatching mechanisms.
       Metadata in the shape of `[atom | term]` is reserved for senders and raises.
 
   """
@@ -259,18 +240,47 @@ defmodule Combo.PubSub do
 
   ## Example
 
-      iex> PubSub.subscribe_match(:my_pubsub, "users:123", metadata: :fast)
+      iex> PubSub.subscribe(:my_pubsub, "users:123", metadata: :fast)
       :ok
-      iex> PubSub.subscribe_match(:my_pubsub, "users:123", metadata: :slow)
+      iex> PubSub.subscribe(:my_pubsub, "users:123", metadata: :slow)
       :ok
       iex> PubSub.unsubscribe_match(:my_pubsub, "users:123", :fast)
       :ok
       # Only the :fast subscription is removed, :slow remains active
 
   """
+  @doc deprecated:
+         "Using custom metadata when subscribing is deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
   @spec unsubscribe_match(t, topic, term) :: :ok
   def unsubscribe_match(pubsub, topic, metadata) when is_atom(pubsub) and is_binary(topic) do
     Registry.unregister_match(pubsub, topic, metadata)
+  end
+
+  @doc """
+  Unsubscribes the caller from the PubSub adapter's topic taking the sender into consideration.
+
+  Accepts a `{module, metadata}` tuple, as passed to the `:sender` option of
+  `subscribe/3`. Removes all of the caller's subscriptions for the topic whose
+  sender module and metadata match, preserving other subscriptions.
+
+  The metadata follows the same pattern-matching rules as `unsubscribe_match/3`.
+  For example, `{MySender, :_}` matches any metadata for `MySender`.
+
+  ## Example
+
+      iex> PubSub.subscribe(:my_pubsub, "users:123", sender: {MySender, :fast})
+      :ok
+      iex> PubSub.subscribe(:my_pubsub, "users:123", sender: {MySender, :slow})
+      :ok
+      iex> PubSub.unsubscribe_sender(:my_pubsub, "users:123", {MySender, :fast})
+      :ok
+      # Only the :fast subscription is removed, :slow remains active
+
+  """
+  @spec unsubscribe_sender(t, topic, {module(), term()}) :: :ok
+  def unsubscribe_sender(pubsub, topic, {module, metadata})
+      when is_atom(pubsub) and is_binary(topic) and is_atom(module) do
+    unsubscribe_match(pubsub, topic, [module | metadata])
   end
 
   @doc """
@@ -295,10 +305,9 @@ defmodule Combo.PubSub do
 
   @doc """
   Broadcasts message on given topic across the whole cluster using a custom dispatcher.
-
-  Custom dispatchers are deprecated, use the `:sender` option of
-  `subscribe/3` instead. See `Combo.PubSub.Sender`.
   """
+  @doc deprecated:
+         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
   @spec broadcast(t, topic, message, dispatcher) :: :ok | {:error, term}
   def broadcast(pubsub, topic, message, dispatcher)
       when is_atom(pubsub) and is_binary(topic) and is_atom(dispatcher) do
@@ -337,10 +346,9 @@ defmodule Combo.PubSub do
   @doc """
   Broadcasts message on given topic from the given process across the whole cluster
   using a custom dispatcher.
-
-  Custom dispatchers are deprecated, use the `:sender` option of
-  `subscribe/3` instead. See `Combo.PubSub.Sender`.
   """
+  @doc deprecated:
+         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
   @spec broadcast_from(t, pid, topic, message, dispatcher) :: :ok | {:error, term}
   def broadcast_from(pubsub, from, topic, message, dispatcher)
       when is_atom(pubsub) and is_pid(from) and is_binary(topic) and is_atom(dispatcher) do
@@ -372,10 +380,9 @@ defmodule Combo.PubSub do
   @doc """
   Broadcasts message on given topic only for the current node
   with a custom dispatcher.
-
-  Custom dispatchers are deprecated, use the `:sender` option of
-  `subscribe/3` instead. See `Combo.PubSub.Sender`.
   """
+  @doc deprecated:
+         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
   @spec local_broadcast(t, topic, message, dispatcher) :: :ok
   def local_broadcast(pubsub, topic, message, dispatcher)
       when is_atom(pubsub) and is_binary(topic) and is_atom(dispatcher) do
@@ -408,6 +415,8 @@ defmodule Combo.PubSub do
   Broadcasts message on given topic from a given process only for the current node
   using a custom dispatcher.
   """
+  @doc deprecated:
+         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
   @spec local_broadcast_from(t, pid, topic, message, dispatcher) :: :ok
   def local_broadcast_from(pubsub, from, topic, message, dispatcher)
       when is_atom(pubsub) and is_pid(from) and is_binary(topic) and is_atom(dispatcher) do
@@ -438,10 +447,9 @@ defmodule Combo.PubSub do
 
   @doc """
   Broadcasts message on given topic to a given node using a custom dispatcher.
-
-  Custom dispatchers are deprecated, use the `:sender` option of
-  `subscribe/3` instead. See `Combo.PubSub.Sender`.
   """
+  @doc deprecated:
+         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
   @spec direct_broadcast(node_name, t, topic, message, dispatcher) :: :ok | {:error, term}
   def direct_broadcast(node_name, pubsub, topic, message, dispatcher)
       when is_atom(pubsub) and is_binary(topic) and is_atom(dispatcher) do
@@ -463,10 +471,9 @@ defmodule Combo.PubSub do
 
   @doc """
   Raising version of `broadcast/4`.
-
-  Custom dispatchers are deprecated, use the `:sender` option of
-  `subscribe/3` instead. See `Combo.PubSub.Sender`.
   """
+  @doc deprecated:
+         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
   @spec broadcast!(t, topic, message, dispatcher) :: :ok
   def broadcast!(pubsub, topic, message, dispatcher) do
     case broadcast(pubsub, topic, message, dispatcher) do
@@ -488,10 +495,9 @@ defmodule Combo.PubSub do
 
   @doc """
   Raising version of `broadcast_from/5`.
-
-  Custom dispatchers are deprecated, use the `:sender` option of
-  `subscribe/3` instead. See `Combo.PubSub.Sender`.
   """
+  @doc deprecated:
+         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
   @spec broadcast_from!(t, pid, topic, message, dispatcher) :: :ok
   def broadcast_from!(pubsub, from, topic, message, dispatcher) do
     case broadcast_from(pubsub, from, topic, message, dispatcher) do
@@ -513,10 +519,9 @@ defmodule Combo.PubSub do
 
   @doc """
   Raising version of `direct_broadcast/5`.
-
-  Custom dispatchers are deprecated, use the `:sender` option of
-  `subscribe/3` instead. See `Combo.PubSub.Sender`.
   """
+  @doc deprecated:
+         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
   @spec direct_broadcast!(node_name, t, topic, message, dispatcher) :: :ok
   def direct_broadcast!(node_name, pubsub, topic, message, dispatcher) do
     case direct_broadcast(node_name, pubsub, topic, message, dispatcher) do
