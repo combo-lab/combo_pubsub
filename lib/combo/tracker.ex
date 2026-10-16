@@ -101,7 +101,7 @@ defmodule Combo.Tracker do
   @type presence :: {key :: String.t(), meta :: map}
   @type topic :: String.t()
 
-  @callback init(Keyword.t()) :: {:ok, state :: term()} | {:error, reason :: term()}
+  @callback init(opts :: Keyword.t()) :: {:ok, state :: term()} | {:error, reason :: term()}
   @callback handle_diff(
               %{topic() => {joins :: [presence()], leaves :: [presence()]}},
               state :: term()
