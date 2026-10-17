@@ -31,15 +31,15 @@ defmodule Combo.PubSub.Sender do
   serializing the same message for each delivery.
 
   Each broadcast starts a separate accumulator for each sender module in each
-  Registry partition. The first `send/4` invocation receives `nil` and subsequent
-  calls for that module within the same partition receive the previously returned
-  value. State is not shared across partitions or retained between broadcasts.
+  `Registry` partition. The first `send/4` invocation receives `nil` and
+  subsequent calls for that module within the same partition receive the previously
+  returned value. State is not shared across partitions or retained between broadcasts.
 
   Subscriptions with different metadata but the same sender module share the
   accumulator within a partition. If serialization depends on the metadata,
   key cached data by the relevant metadata, such as the serializer or format.
 
-  After all deliveries in a Registry partition complete, the optional `finalize/1`
+  After all deliveries in a `Registry` partition complete, the optional `finalize/1`
   callback is called once for each sender module that was invoked and implements
   it, with its final accumulated state.
   This callback can release resources or flush work accumulated during delivery.
