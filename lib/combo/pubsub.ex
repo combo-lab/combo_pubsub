@@ -304,22 +304,6 @@ defmodule Combo.PubSub do
   end
 
   @doc """
-  Broadcasts message on given topic across the whole cluster using a custom dispatcher.
-  """
-  @doc deprecated:
-         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
-  @spec broadcast(t, topic, message, dispatcher) :: :ok | {:error, term}
-  def broadcast(pubsub, topic, message, dispatcher)
-      when is_atom(pubsub) and is_binary(topic) and is_atom(dispatcher) do
-    {:ok, {adapter, name, default_dispatcher}} = Registry.meta(pubsub, :pubsub)
-    dispatcher = dispatcher || default_dispatcher
-
-    with :ok <- adapter.broadcast(name, topic, message, dispatcher) do
-      dispatch(pubsub, :none, topic, message, dispatcher)
-    end
-  end
-
-  @doc """
   Broadcasts message on given topic from the given process across the whole
   cluster.
 

@@ -83,17 +83,6 @@ defmodule Combo.PubSub.UnitTest do
       assert_receive {:custom_dispatched, :hello}
     end
 
-    test "explicit dispatcher overrides the configured default" do
-      name = :"ps_override_#{:erlang.unique_integer([:positive])}"
-      start_supervised!({PubSub, name: name, dispatcher: TestDispatcher})
-
-      PubSub.subscribe(name, "topic")
-      # Pass Combo.PubSub explicitly to override the configured TestDispatcher
-      PubSub.broadcast(name, "topic", :hello, PubSub)
-      assert_receive :hello
-      refute_received {:custom_dispatched, :hello}
-    end
-
     test "bang variants use configured dispatcher" do
       name = :"ps_bang_#{:erlang.unique_integer([:positive])}"
       start_supervised!({PubSub, name: name, dispatcher: TestDispatcher})

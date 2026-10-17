@@ -53,10 +53,6 @@ defmodule Combo.PubSub.DistributedTest do
   test "custom dispatcher travels to remote nodes", config do
     spy_on_pubsub(@node1, config.pubsub, self(), config.topic)
 
-    # the dispatcher API must keep its v2.3 behaviour of running cluster-wide
-    :ok = PubSub.broadcast(config.pubsub, config.topic, :ping, RemoteDispatcher)
-    assert_receive {@node1, {:dispatched, @node1, nil, :none, :ping}}
-
     :ok = PubSub.direct_broadcast(@node1, config.pubsub, config.topic, :ping, RemoteDispatcher)
     assert_receive {@node1, {:dispatched, @node1, nil, :none, :ping}}
   end

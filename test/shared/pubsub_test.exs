@@ -29,6 +29,16 @@ defmodule Combo.PubSubTest do
     pid
   end
 
+  defmodule CustomSender do
+    @behaviour Combo.PubSub.Sender
+
+    @impl true
+    def send(pid, metadata, message, state) do
+      Kernel.send(pid, {:custom, metadata, message})
+      state
+    end
+  end
+
   defmodule CustomDispatcher do
     def dispatch(entries, from, message) do
       for {pid, metadata} <- entries do
@@ -191,13 +201,22 @@ defmodule Combo.PubSubTest do
     end
 
     @tag pool_size: size
+    test "pool #{size}: with sender", %{topic: topic, test: test} do
+      PubSub.subscribe(test, topic)
+      PubSub.subscribe(test, topic, sender: {CustomSender, :special})
+
+      assert :ok = PubSub.broadcast(test, topic, :broadcast)
+
+      assert_receive :broadcast
+      assert_receive {:custom, :special, :broadcast}
+      refute_received :broadcast
+      refute_received {:custom, _, :broadcast}
+    end
+
+    @tag pool_size: size
     test "pool #{size}: with custom dispatching", %{topic: topic, test: test, node: node} do
       PubSub.subscribe(test, topic)
       PubSub.subscribe(test, topic, metadata: :special)
-
-      PubSub.broadcast(test, topic, :broadcast, CustomDispatcher)
-      assert_receive {:custom, nil, :none, :broadcast}
-      assert_receive {:custom, :special, :none, :broadcast}
 
       PubSub.broadcast_from(test, self(), topic, :broadcast_from, CustomDispatcher)
       assert_receive {:custom, nil, pid, :broadcast_from} when pid == self()
