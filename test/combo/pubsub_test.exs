@@ -137,14 +137,25 @@ defmodule Combo.PubSub.UnitTest do
       assert_receive :subscribed
     end
 
-    test "invokes the sender instead of a plain send" do
+    test "broadcast/3 delivers directly" do
       name = start_pubsub!()
+      PubSub.subscribe(name, "topic")
 
-      PubSub.subscribe(name, "topic", sender: {TestSender, {:custom, "topic"}})
-      PubSub.broadcast(name, "topic", :hello)
-
-      assert_receive {:sent, {:custom, "topic"}, :hello, nil}
+      assert :ok = PubSub.broadcast(name, "topic", :hello)
+      assert_received :hello
       refute_received :hello
+    end
+
+    test "broadcast/3 delivers through the sender" do
+      name = start_pubsub!()
+      PubSub.subscribe(name, "topic", sender: {TestSender, :meta})
+
+      assert :ok = PubSub.broadcast(name, "topic", :hello)
+      assert_received {:sent, :meta, :hello, nil}
+      assert_received {:finalized, TestSender, 1}
+      refute_received :hello
+      refute_received {:sent, _, _, _}
+      refute_received {:finalized, _, _}
     end
 
     test "broadcast!/3 delivers directly" do
