@@ -158,6 +158,28 @@ defmodule Combo.PubSub.UnitTest do
       refute_received :hello
     end
 
+    test "broadcast!/3 delivers directly" do
+      name = start_pubsub!()
+      PubSub.subscribe(name, "topic")
+
+      assert :ok = PubSub.broadcast!(name, "topic", :hello)
+      assert_received :hello
+      refute_received :hello
+    end
+
+    test "broadcast!/3 delivers through the sender" do
+      name = start_pubsub!(registry_size: 1)
+      PubSub.subscribe(name, "topic", sender: {TestSender, :meta})
+
+      assert :ok = PubSub.broadcast!(name, "topic", :hello)
+
+      assert_received {:sent, :meta, :hello, nil}
+      assert_received {:finalized, TestSender, 1}
+      refute_received :hello
+      refute_received {:sent, _, _, _}
+      refute_received {:finalized, _, _}
+    end
+
     test "delivers exactly once per subscription" do
       name = start_pubsub!()
 

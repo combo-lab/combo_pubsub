@@ -470,19 +470,6 @@ defmodule Combo.PubSub do
   end
 
   @doc """
-  Raising version of `broadcast/4`.
-  """
-  @doc deprecated:
-         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
-  @spec broadcast!(t, topic, message, dispatcher) :: :ok
-  def broadcast!(pubsub, topic, message, dispatcher) do
-    case broadcast(pubsub, topic, message, dispatcher) do
-      :ok -> :ok
-      {:error, error} -> raise BroadcastError, "broadcast failed: #{inspect(error)}"
-    end
-  end
-
-  @doc """
   Raising version of `broadcast_from/4`.
   """
   @spec broadcast_from!(t, pid, topic, message) :: :ok
