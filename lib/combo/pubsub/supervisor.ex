@@ -3,10 +3,6 @@ defmodule Combo.PubSub.Supervisor do
   use Supervisor
 
   def start_link(opts) do
-    unless Code.ensure_loaded?(:persistent_term) do
-      raise "Combo.PubSub v2.1 requires at least Erlang/OTP 21.3"
-    end
-
     name =
       opts[:name] ||
         raise ArgumentError, "the :name option is required when starting Combo.PubSub"
