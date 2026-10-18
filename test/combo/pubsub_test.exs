@@ -337,13 +337,26 @@ defmodule Combo.PubSub.UnitTest do
       refute_receive {^other, _}
     end
 
-    test "local_broadcast/3 invokes the sender" do
+    # DONE
+    test "local_broadcast/3 dispatches messages directly" do
       name = start_pubsub!()
+      PubSub.subscribe(name, "topic")
 
+      :ok = PubSub.local_broadcast(name, "topic", :hello)
+
+      assert_receive :hello
+      refute_receive :hello
+    end
+
+    # DONE
+    test "local_broadcast/3 dispatches messages through the sender" do
+      name = start_pubsub!()
       PubSub.subscribe(name, "topic", sender: {TestSender, :meta})
-      PubSub.local_broadcast(name, "topic", :hello)
+
+      :ok = PubSub.local_broadcast(name, "topic", :hello)
 
       assert_receive {:sent, :meta, :hello, nil}
+      refute_receive {:sent, _, _, _}
     end
 
     test "unsubscribe removes the sender subscription" do

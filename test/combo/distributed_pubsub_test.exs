@@ -26,14 +26,16 @@ defmodule Combo.PubSub.DistributedTest do
     assert_receive {@node2, :ping}
   end
 
-  test "local_broadcast targets current nodes", config do
+  test "local_broadcast/3 targets only the current node", config do
     spy_on_pubsub(@node1, config.pubsub, self(), config.topic)
     spy_on_pubsub(@node2, config.pubsub, self(), config.topic)
 
     PubSub.subscribe(config.pubsub, config.topic)
     :ok = PubSub.local_broadcast(config.pubsub, config.topic, :ping)
-    refute_received {@node1, :ping}
-    refute_received {@node2, :ping}
+
+    assert_receive :ping
+    refute_receive {@node1, :ping}
+    refute_receive {@node2, :ping}
   end
 
   test "direct_broadcast targets a specific node", config do

@@ -218,10 +218,6 @@ defmodule Combo.PubSubTest do
       PubSub.subscribe(test, topic)
       PubSub.subscribe(test, topic, metadata: :special)
 
-      PubSub.local_broadcast(test, topic, :local, CustomDispatcher)
-      assert_receive {:custom, nil, :none, :local}
-      assert_receive {:custom, :special, :none, :local}
-
       PubSub.local_broadcast_from(test, self(), topic, :local_from, CustomDispatcher)
       assert_receive {:custom, nil, pid, :local_from} when pid == self()
       assert_receive {:custom, :special, pid, :local_from} when pid == self()

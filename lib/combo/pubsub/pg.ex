@@ -108,7 +108,7 @@ defmodule Combo.PubSub.PGWorker do
 
   @impl true
   def handle_info({:forward_to_local, topic, message, dispatcher}, pubsub) do
-    Combo.PubSub.local_broadcast(pubsub, topic, message, dispatcher)
+    Registry.dispatch(pubsub, topic, {dispatcher, :dispatch, [:none, message]})
     {:noreply, pubsub}
   end
 
