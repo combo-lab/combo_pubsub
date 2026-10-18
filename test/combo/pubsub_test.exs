@@ -285,13 +285,30 @@ defmodule Combo.PubSub.UnitTest do
       assert_receive {:plain, :hello}
     end
 
-    test "broadcast_from/4 skips the sending process" do
+    # DONE
+    test "broadcast_from/4 dispatches messages directly, and skips the broadcasting process" do
       name = start_pubsub!()
+      PubSub.subscribe(name, "topic")
+      other = spawn_subscriber(name, "topic")
 
+      :ok = PubSub.broadcast_from(name, self(), "topic", :hello)
+
+      refute_receive :hello
+      assert_receive {^other, :hello}
+      refute_receive {^other, _}
+    end
+
+    # DONE
+    test "broadcast_from/4 dispatches messages through the sender, and skips the broadcasting process" do
+      name = start_pubsub!()
       PubSub.subscribe(name, "topic", sender: {TestSender, :meta})
-      PubSub.broadcast_from(name, self(), "topic", :hello)
+      other = spawn_subscriber(name, "topic", sender: {TestSender, :meta})
 
-      refute_received {:sent, :meta, :hello, _}
+      :ok = PubSub.broadcast_from(name, self(), "topic", :hello)
+
+      refute_receive {:sent, _, _, _}
+      assert_receive {^other, {:sent, :meta, :hello, _}}
+      refute_receive {^other, _}
     end
 
     # DONE
