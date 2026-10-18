@@ -431,19 +431,6 @@ defmodule Combo.PubSub do
   end
 
   @doc """
-  Raising version of `direct_broadcast/5`.
-  """
-  @doc deprecated:
-         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
-  @spec direct_broadcast!(node_name, t, topic, message, dispatcher) :: :ok
-  def direct_broadcast!(node_name, pubsub, topic, message, dispatcher) do
-    case direct_broadcast(node_name, pubsub, topic, message, dispatcher) do
-      :ok -> :ok
-      {:error, error} -> raise BroadcastError, "broadcast failed: #{inspect(error)}"
-    end
-  end
-
-  @doc """
   Returns the node name of the pubsub server.
   """
   @spec node_name(t) :: node_name
