@@ -106,7 +106,9 @@ defmodule Combo.PubSub.UnitTest do
       end
 
       @impl true
-      def finalize(state), do: Kernel.send(self(), {:finalized, __MODULE__, state})
+      def finalize(state) do
+        Kernel.send(self(), {:finalized, __MODULE__, state})
+      end
     end
 
     defmodule OtherSender do
@@ -123,6 +125,20 @@ defmodule Combo.PubSub.UnitTest do
       name = :"ps_sender_#{:erlang.unique_integer([:positive])}"
       start_supervised!({PubSub, [name: name] ++ opts})
       name
+    end
+
+    defp spawn_subscriber(name, topic, opts \\ []) do
+      parent = self()
+
+      pid =
+        spawn_link(fn ->
+          :ok = PubSub.subscribe(name, topic, opts)
+          send(parent, {:subscribed, self()})
+          receive do: (msg -> send(parent, {self(), msg}))
+        end)
+
+      assert_receive {:subscribed, ^pid}
+      pid
     end
 
     defp subscribe_from_new_process(name, sender) do
@@ -276,6 +292,32 @@ defmodule Combo.PubSub.UnitTest do
       PubSub.broadcast_from(name, self(), "topic", :hello)
 
       refute_received {:sent, :meta, :hello, _}
+    end
+
+    # DONE
+    test "broadcast_from!/4 dispatches messages directly, and skips the broadcasting process" do
+      name = start_pubsub!()
+      PubSub.subscribe(name, "topic")
+      other = spawn_subscriber(name, "topic")
+
+      :ok = PubSub.broadcast_from!(name, self(), "topic", :hello)
+
+      refute_receive :hello
+      assert_receive {^other, :hello}
+      refute_receive {^other, _}
+    end
+
+    # DONE
+    test "broadcast_from!/4 dispatches messages through the sender, and skips the broadcasting process" do
+      name = start_pubsub!()
+      PubSub.subscribe(name, "topic", sender: {TestSender, :meta})
+      other = spawn_subscriber(name, "topic", sender: {TestSender, :meta})
+
+      :ok = PubSub.broadcast_from!(name, self(), "topic", :hello)
+
+      refute_receive {:sent, _, _, _}
+      assert_receive {^other, {:sent, :meta, :hello, _}}
+      refute_receive {^other, _}
     end
 
     test "local_broadcast/3 invokes the sender" do
