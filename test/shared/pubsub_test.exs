@@ -193,7 +193,7 @@ defmodule Combo.PubSubTest do
     end
 
     @tag pool_size: size
-    test "pool #{size}: local_broadcast_from/5 skips sender", config do
+    test "pool #{size}: local_broadcast_from/4 skips sender", config do
       PubSub.subscribe(config.pubsub, config.topic)
 
       PubSub.local_broadcast_from(config.pubsub, self(), config.topic, :ping)
@@ -217,10 +217,6 @@ defmodule Combo.PubSubTest do
     test "pool #{size}: with custom dispatching", %{topic: topic, test: test, node: node} do
       PubSub.subscribe(test, topic)
       PubSub.subscribe(test, topic, metadata: :special)
-
-      PubSub.local_broadcast_from(test, self(), topic, :local_from, CustomDispatcher)
-      assert_receive {:custom, nil, pid, :local_from} when pid == self()
-      assert_receive {:custom, :special, pid, :local_from} when pid == self()
 
       PubSub.direct_broadcast(node, test, topic, :direct, CustomDispatcher)
       assert_receive {:custom, nil, :none, :direct}

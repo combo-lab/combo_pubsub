@@ -359,6 +359,32 @@ defmodule Combo.PubSub.UnitTest do
       refute_receive {:sent, _, _, _}
     end
 
+    # DONE
+    test "local_broadcast_from/4 dispatches messages directly, and skips the broadcasting process" do
+      name = start_pubsub!()
+      PubSub.subscribe(name, "topic")
+      other = spawn_subscriber(name, "topic")
+
+      :ok = PubSub.local_broadcast_from(name, self(), "topic", :hello)
+
+      refute_receive :hello
+      assert_receive {^other, :hello}
+      refute_receive {^other, _}
+    end
+
+    # DONE
+    test "local_broadcast_from/4 dispatches messages through the sender, and skips the broadcasting process" do
+      name = start_pubsub!()
+      PubSub.subscribe(name, "topic", sender: {TestSender, :meta})
+      other = spawn_subscriber(name, "topic", sender: {TestSender, :meta})
+
+      :ok = PubSub.local_broadcast_from(name, self(), "topic", :hello)
+
+      refute_receive {:sent, _, _, _}
+      assert_receive {^other, {:sent, :meta, :hello, nil}}
+      refute_receive {^other, _}
+    end
+
     test "unsubscribe removes the sender subscription" do
       name = start_pubsub!()
 
