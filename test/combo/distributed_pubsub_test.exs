@@ -2,7 +2,7 @@ defmodule Combo.PubSub.DistributedTest do
   use Combo.PubSub.NodeCase
 
   alias Combo.PubSub
-  alias Combo.PubSub.{RemoteDispatcher, RemoteSender}
+  alias Combo.PubSub.RemoteSender
 
   @node1 :"node1@127.0.0.1"
   @node2 :"node2@127.0.0.1"
@@ -14,25 +14,27 @@ defmodule Combo.PubSub.DistributedTest do
   end
 
   test "broadcast targets all nodes", config do
+    PubSub.subscribe(config.pubsub, config.topic)
     spy_on_pubsub(@node1, config.pubsub, self(), config.topic)
     spy_on_pubsub(@node2, config.pubsub, self(), config.topic)
 
     :ok = PubSub.broadcast(config.pubsub, config.topic, :ping)
+    assert_receive :ping
     assert_receive {@node1, :ping}
     assert_receive {@node2, :ping}
 
-    :ok = PubSub.broadcast(config.pubsub, config.topic, :ping)
+    :ok = PubSub.broadcast!(config.pubsub, config.topic, :ping)
+    assert_receive :ping
     assert_receive {@node1, :ping}
     assert_receive {@node2, :ping}
   end
 
-  test "local_broadcast/3 targets only the current node", config do
+  test "local_broadcast targets only the current node", config do
+    PubSub.subscribe(config.pubsub, config.topic)
     spy_on_pubsub(@node1, config.pubsub, self(), config.topic)
     spy_on_pubsub(@node2, config.pubsub, self(), config.topic)
 
-    PubSub.subscribe(config.pubsub, config.topic)
     :ok = PubSub.local_broadcast(config.pubsub, config.topic, :ping)
-
     assert_receive :ping
     refute_receive {@node1, :ping}
     refute_receive {@node2, :ping}
@@ -47,16 +49,33 @@ defmodule Combo.PubSub.DistributedTest do
     assert_receive {@node1, :ping}
 
     :ok = PubSub.direct_broadcast(@node2, config.pubsub, config.topic, :ping)
-    refute_received {@node1, :ping}
+    refute_receive {@node1, :ping}
     :ok = PubSub.direct_broadcast!(@node2, config.pubsub, config.topic, :ping)
-    refute_received {@node1, :ping}
+    refute_receive {@node1, :ping}
   end
 
-  test "custom dispatcher travels to remote nodes", config do
-    spy_on_pubsub(@node1, config.pubsub, self(), config.topic)
+  test "direct_broadcast/4 delivers through the sender only on the target node", config do
+    topic = config.topic
+    PubSub.subscribe(config.pubsub, topic)
+    spy_on_pubsub(@node2, config.pubsub, self(), topic)
 
-    :ok = PubSub.direct_broadcast(@node1, config.pubsub, config.topic, :ping, RemoteDispatcher)
-    assert_receive {@node1, {:dispatched, @node1, nil, :none, :ping}}
+    spy_on_pubsub_with_sender(
+      @node1,
+      config.pubsub,
+      self(),
+      topic,
+      {RemoteSender, {:custom, topic}}
+    )
+
+    :ok = PubSub.direct_broadcast(@node1, config.pubsub, topic, :ping)
+
+    refute_receive :ping
+    refute_receive {:sent, _, _, _}
+
+    refute_receive {@node1, :ping}
+    assert_receive {@node1, {:sent, @node1, {:custom, ^topic}, :ping, nil}}
+
+    refute_receive {@node2, _}
   end
 
   test ":sender is honoured for remote subscribers", config do
@@ -89,16 +108,20 @@ defmodule Combo.PubSub.DistributedTest do
 
     :ok = PubSub.direct_broadcast!(@node1, config.pubsub, topic, :ping)
 
+    refute_receive :ping
+    refute_receive {:sent, _, _, _}
+
     assert_receive {@node1, {:sent, @node1, {:custom, ^topic}, :ping, nil}}
     refute_receive {@node1, _}
+
     refute_receive {@node2, _}
-    refute_receive :ping
   end
 
   test "broadcast is received by other node that has pool_size > broadcast_pool_size", config do
     spy_on_pubsub(@node1, config.pubsub, self(), config.topic)
     # node3 has pool_size = 4, broadcast_pool_size = 1
     spy_on_pubsub(@node3, config.pubsub, self(), config.topic)
+
     :ok = PubSub.broadcast(config.pubsub, config.topic, :ping)
     assert_receive {@node3, :ping}
   end

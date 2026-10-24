@@ -386,6 +386,28 @@ defmodule Combo.PubSub.UnitTest do
     end
 
     # DONE
+    test "direct_broadcast/4 dispatches messages directly" do
+      pubsub = start_pubsub!()
+      PubSub.subscribe(pubsub, "topic")
+
+      :ok = PubSub.direct_broadcast(PubSub.node_name(pubsub), pubsub, "topic", :hello)
+
+      assert_receive :hello
+      refute_receive :hello
+    end
+
+    # DONE
+    test "direct_broadcast/4 dispatches messages through the sender" do
+      pubsub = start_pubsub!()
+      PubSub.subscribe(pubsub, "topic", sender: {TestSender, :meta})
+
+      :ok = PubSub.direct_broadcast(PubSub.node_name(pubsub), pubsub, "topic", :hello)
+
+      assert_receive {:sent, :meta, :hello, nil}
+      refute_receive {:sent, _, _, _}
+    end
+
+    # DONE
     test "direct_broadcast!/4 dispatches messages directly" do
       pubsub = start_pubsub!()
       PubSub.subscribe(pubsub, "topic")

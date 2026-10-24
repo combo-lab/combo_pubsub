@@ -385,19 +385,6 @@ defmodule Combo.PubSub do
   end
 
   @doc """
-  Broadcasts message on given topic to a given node using a custom dispatcher.
-  """
-  @doc deprecated:
-         "Custom dispatchers are deprecated, use the `:sender` option of `subscribe/3` instead. See `Combo.PubSub.Sender`."
-  @spec direct_broadcast(node_name, t, topic, message, dispatcher) :: :ok | {:error, term}
-  def direct_broadcast(node_name, pubsub, topic, message, dispatcher)
-      when is_atom(pubsub) and is_binary(topic) and is_atom(dispatcher) do
-    {:ok, {adapter, name, default_dispatcher}} = Registry.meta(pubsub, :pubsub)
-    dispatcher = dispatcher || default_dispatcher
-    adapter.direct_broadcast(name, node_name, topic, message, dispatcher)
-  end
-
-  @doc """
   Raising version of `broadcast/3`.
   """
   @spec broadcast!(t, topic, message) :: :ok

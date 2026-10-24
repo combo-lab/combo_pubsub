@@ -39,16 +39,6 @@ defmodule Combo.PubSubTest do
     end
   end
 
-  defmodule CustomDispatcher do
-    def dispatch(entries, from, message) do
-      for {pid, metadata} <- entries do
-        send(pid, {:custom, metadata, from, message})
-      end
-
-      :ok
-    end
-  end
-
   setup config do
     size = config[:pool_size] || 1
 
@@ -211,16 +201,6 @@ defmodule Combo.PubSubTest do
       assert_receive {:custom, :special, :broadcast}
       refute_received :broadcast
       refute_received {:custom, _, :broadcast}
-    end
-
-    @tag pool_size: size
-    test "pool #{size}: with custom dispatching", %{topic: topic, test: test, node: node} do
-      PubSub.subscribe(test, topic)
-      PubSub.subscribe(test, topic, metadata: :special)
-
-      PubSub.direct_broadcast(node, test, topic, :direct, CustomDispatcher)
-      assert_receive {:custom, nil, :none, :direct}
-      assert_receive {:custom, :special, :none, :direct}
     end
   end
 
